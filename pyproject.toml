@@ -4,4 +4,7 @@ version = "0.1.0"
 description = "为 iskra-data 提供内容，将各种格式的资料转换为 Markdown。"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pymupdf4llm>=0.2.9",   # 内部包含核心库 pymupdf
+    "pyyaml>=6.0.3",
+]
