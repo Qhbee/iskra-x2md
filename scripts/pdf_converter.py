@@ -34,11 +34,11 @@ SPLIT_LEVEL = 5
 # 斯大林选集：顶部切 82 去页眉，底部留 0 保注脚
 MARGINS = (0, 82, 0, 0)
 
-# 5. 黑名单 (遇到这些书签就跳过，不处理；也可以用于分卷解析)
+# 5. 黑名单 (遇到这些书签先记录下来，特别是用页码定位，最后再删掉)
 BLACKLIST = ["示例黑名单", "斯大林历史档案选", "选自全集档案附卷"]
 
 
-# ==================== ⚙️ 智能引擎 ====================
+# ==================== ⚙️ 智能引擎 (黑名单修复版) ====================
 
 def clean_filename(text):
     """文件名清洗，把不能做文件名的字符(如?, :)换成下划线"""
@@ -46,45 +46,80 @@ def clean_filename(text):
 
 
 def extract_toc_structure(doc):
-    """提取书签，并标记每个节点是否为'叶子节点'(没有子节点)"""
+    """
+    提取书签，并计算页码范围
+    核心逻辑：先保留黑名单条目用于计算页码边界，算完后再过滤。
+    """
     toc = doc.get_toc()
     total_pages = doc.page_count
 
-    # 第一遍：构建基础数据
-    structure = []
-    for i, item in enumerate(toc):
+    # --- 第一步：构建全量列表 (标记黑名单，但不删除) ---
+    full_list = []
+    skipping_level = -1  # 用于处理黑名单的子节点
+
+    for item in toc:
         lvl, title, page = item[0], item[1], item[2]
 
-        # 过滤黑名单
-        if not title.strip() or any(x in title for x in BLACKLIST):
-            continue
+        is_blacklisted = False
 
-        # 计算结束页：下一个条目的开始页 - 1
-        if i + 1 < len(toc):
-            end_page = toc[i + 1][2] - 1
-        else:
-            end_page = total_pages
+        # 1. 递归黑名单逻辑 (如果父级是黑名单，子级也是)
+        if skipping_level != -1:
+            if lvl > skipping_level:
+                is_blacklisted = True
+            else:
+                skipping_level = -1  # 归位
 
-        if page > end_page: end_page = page  # 修正异常
+        # 2. 自身黑名单逻辑
+        if skipping_level == -1 and any(bad in title for bad in BLACKLIST):
+            is_blacklisted = True
+            skipping_level = lvl
 
         # PyMuPDF页码从0开始，PDF书签从1开始 -> 减1
-        structure.append({
+        full_list.append({
             "level": lvl,
             "title": title.strip(),
             "start": page - 1,
-            "end": end_page - 1,
+            "end": -1,  # 待计算
+            "is_blacklisted": is_blacklisted,  # 关键标记
             "has_children": False  # 默认为 False，稍后计算
         })
 
-    # 第二遍：计算 has_children
-    for i in range(len(structure) - 1):
-        current_node = structure[i]
-        next_node = structure[i + 1]
+    # --- 第二步：计算 has_children ---
+    for i in range(len(full_list) - 1):
         # 如果 下一个元素 的 level > 当前元素 level，说明当前元素有子节点
-        if next_node['level'] > current_node['level']:
-            current_node['has_children'] = True
+        if full_list[i + 1]['level'] > full_list[i]['level']:
+            full_list[i]['has_children'] = True
 
-    return structure
+    # --- 第三步：计算页码 (使用包含黑名单的全量列表作为参考) ---
+    for i in range(len(full_list)):
+        current = full_list[i]
+
+        # 寻找下一个“同级或更高级”的节点 (作为物理边界)
+        # 即使那个节点是黑名单，它也是物理存在的，必须作为边界！
+        boundary_index = -1
+        for j in range(i + 1, len(full_list)):
+            if full_list[j]['level'] <= current['level']:
+                boundary_index = j
+                break
+
+        if boundary_index != -1:
+            # 结束页 = 下一个边界节点的开始页 - 1
+            end_page = full_list[boundary_index]['start'] - 1
+        else:
+            # 没找到边界，说明是全书最后
+            end_page = total_pages - 1
+
+        # 修正逻辑：不能小于 start
+        if end_page < current['start']:
+            end_page = current['start']
+
+        current['end'] = end_page
+
+    # --- 第四步：最后才执行过滤 ---
+    # 只保留非黑名单的条目
+    final_toc = [item for item in full_list if not item['is_blacklisted']]
+
+    return final_toc
 
 
 def main():
@@ -139,13 +174,15 @@ def main():
 
         if DRY_RUN:
             if is_folder:
-                print(f"{indent}📂 {title} ------ [文件夹]")
+                print(f"{indent}📂 {title}")
             elif is_file:
                 # 区分一下是因为到了层级切分，还是因为是孤儿节点切分
                 reason = "[层级达标]" if lvl == SPLIT_LEVEL else "[无子节点]"
-                print(f"{indent}📄 {title} ------ [MD 文件] {reason} (p{start + 1}-p{end + 1})")
+                page_count = end - start + 1
+                # 重点关注这里的页数变化
+                print(f"{indent}📄 {title} {reason} (p{start + 1}-p{end + 1}, 共{page_count}页)")
             else:
-                print(f"{indent}🔹 {title} ------ [MD 内标题]")
+                print(f"{indent}🔹 {title}")
             continue
 
         # --- 模式 B: 执行模式 (DRY_RUN = False) ---
@@ -163,9 +200,6 @@ def main():
 
         elif is_file:
             parent = path_stack.get(lvl - 1, OUTPUT_DIR)
-            # 如果是孤儿节点，它的父级路径可能在 path_stack 里没更新到当前层，取最近的父级
-            # 这里的逻辑通常没问题，因为父级肯定先被处理了
-
             file_name = f"{clean_filename(title)}.md"
             file_path = parent / file_name
 
