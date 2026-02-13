@@ -228,12 +228,34 @@ class StalinParser:
                 if "kai" in font_lower: is_italic = True
 
                 if is_bold or is_italic:
-                    if is_bold and is_italic:
-                        text = f"***{text}***"
-                    elif is_bold:
-                        text = f"**{text}**"
-                    elif is_italic:
-                        text = f"*{text}*"
+                    # [关键修复]：只包裹核心文字，不包裹首尾空格
+                    # 避免 "**    Text**" -> 导致无法 strip 掉缩进
+                    # 改为 "    **Text**" -> 最后的 strip() 可以去掉缩进
+
+                    if not text.strip():
+                        pass  # 如果全是空格，就不加粗了
+                    else:
+                        # 1. 提取左边空格
+                        l_stripped = text.lstrip()
+                        prefix_space = text[:len(text) - len(l_stripped)]
+
+                        # 2. 提取右边空格
+                        r_stripped = text.rstrip()
+                        suffix_space = text[len(r_stripped):]
+
+                        # 3. 提取核心文字
+                        content = text.strip()
+
+                        # 4. 包裹核心文字
+                        if is_bold and is_italic:
+                            content = f"***{content}***"
+                        elif is_bold:
+                            content = f"**{content}**"
+                        elif is_italic:
+                            content = f"*{content}*"
+
+                        # 5. 拼回去
+                        text = prefix_space + content + suffix_space
 
             formatted_text += text
 
