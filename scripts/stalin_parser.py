@@ -29,13 +29,11 @@ class StalinParser:
     def __init__(self, output_base_dir):
         """
         初始化解析器
-        :param output_base_dir: 图片保存的基础目录 (pathlib.Path 对象)
+        :param output_base_dir: 基础目录 (pathlib.Path 对象)
         """
         self.output_base_dir = output_base_dir
         self.img_counter = 0
-        # 确保图片目录存在
-        self.assets_dir = self.output_base_dir / "assets"
-        self.assets_dir.mkdir(parents=True, exist_ok=True)
+        self.assets_dir = None  # 由 parse_chapter_pages 按文章设置
 
         # === 状态变量 ===
         self.global_note_id = 1    # 全局注脚计数器 [^1], [^2]...
@@ -344,12 +342,18 @@ class StalinParser:
             else:
                 self.current_para = clean_line
 
-    def parse_chapter_pages(self, doc, page_indices):
+    def parse_chapter_pages(self, doc, page_indices, article_output_dir):
         """
         [主入口] 解析指定章节的页面列表(跨页流式处理)
         :param doc: PyMuPDF Document
         :param page_indices: 这一章包含的页码列表 (0-based)
+        :param article_output_dir: 本篇文章的输出目录，图片保存在其 assets 子目录
         """
+        # 设置本篇文章的 assets 目录
+        self.assets_dir = article_output_dir / "assets"
+        self.assets_dir.mkdir(parents=True, exist_ok=True)
+        self.img_counter = 0
+
         # 重置状态 (每章开始)
         self.global_note_id = 1
         self.all_footnotes = []
@@ -377,7 +381,7 @@ class StalinParser:
                 # --- 图片处理 ---
                 if "image" in block:
                     self.img_counter += 1
-                    img_filename = f"img_c{page_indices[0]}_{self.img_counter}.png"
+                    img_filename = f"img_{self.img_counter}.png"
                     img_path = self.assets_dir / img_filename
                     try:
                         with open(img_path, "wb") as f:

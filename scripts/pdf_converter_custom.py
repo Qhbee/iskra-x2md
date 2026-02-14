@@ -192,12 +192,12 @@ def main():
 
         elif is_file:
             parent = path_stack.get(lvl - 1, OUTPUT_DIR)
-            file_name = f"{clean_filename(title)}.md"
-            file_path = parent / file_name
+            article_dir = parent / clean_filename(title)
+            file_path = article_dir / "index.md"
 
-            # 确保父目录存在 (防止跳级情况)
-            if not parent.exists():
-                parent.mkdir(parents=True, exist_ok=True)
+            # 确保文章目录和父目录存在 (防止跳级情况)
+            if not article_dir.exists():
+                article_dir.mkdir(parents=True, exist_ok=True)
 
             # YAML
             cats = [title_stack[k] for k in sorted(title_stack.keys()) if k < lvl]
@@ -208,7 +208,8 @@ def main():
                 "book": INPUT_PDF.stem
             }
 
-            print(f"{indent}🚀 转换: {title} ({start + 1}-{end + 1})...")
+            # 采用 Page Bundles 模式
+            print(f"{indent}🚀 转换“文章包” 📦 : {title} ({start + 1}-{end + 1})...")
 
             try:
                 # === 关键：传入页码列表，使用 StalinParser 一次性处理整节，而非逐页解析 ===
@@ -216,7 +217,7 @@ def main():
                 if not pages_to_process: continue
 
                 # 调用 parse_chapter_pages
-                md_content = parser.parse_chapter_pages(doc, pages_to_process)
+                md_content = parser.parse_chapter_pages(doc, pages_to_process, article_output_dir=article_dir)
 
                 final_content = "---\n" + yaml.dump(front_matter, allow_unicode=True) + "---\n\n" + md_content
 
