@@ -16,7 +16,7 @@ from epub_html_parser import clean_filename, parse_html_to_markdown
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INPUT_EPUB = PROJECT_ROOT / "data/raw/lenin/列宁全集.epub"
-OUTPUT_DIR = PROJECT_ROOT / "data/processed/lenin"
+OUTPUT_DIR = PROJECT_ROOT / "data/processed/lenin/列宁全集"
 
 # True = 侦察模式（只看 spine 结构）
 # False = 执行模式（生成 Markdown）

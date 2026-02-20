@@ -18,7 +18,7 @@ from stalin_parser import StalinParser
 # 1. 路径配置 (定位到项目根目录)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INPUT_PDF = PROJECT_ROOT / "data/raw/stalin/斯大林选集_1-4卷_诸夏怀斯社.pdf"
-OUTPUT_DIR = PROJECT_ROOT / "data/processed/stalin"
+OUTPUT_DIR = PROJECT_ROOT / "data/processed/stalin/斯大林选集_1-4卷_诸夏怀斯社"
 
 # 2. 安全模式
 # True = 侦察模式 (只看目录结构)

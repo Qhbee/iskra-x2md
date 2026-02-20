@@ -16,7 +16,7 @@ from pathlib import Path
 # 1. 路径配置 (定位到项目根目录)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INPUT_PDF = PROJECT_ROOT / "data/raw/stalin/斯大林选集_1-4卷_诸夏怀斯社.pdf"
-OUTPUT_DIR = PROJECT_ROOT / "data/processed/stalin_content"
+OUTPUT_DIR = PROJECT_ROOT / "data/processed/stalin/斯大林选集_1-4卷_诸夏怀斯社"
 
 # 2. 安全模式 (True=侦察, False=执行)
 # 建议先用 True 跑一次，检查是否符合预期结构。
