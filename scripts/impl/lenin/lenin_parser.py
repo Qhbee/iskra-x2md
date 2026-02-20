@@ -188,6 +188,8 @@ class LeninParser:
                 if line_prefix.strip() == "###": should_split = False
                 # [豁免 2] 如果是注脚符号 ([^1] 或 ①)，允许紧接标题，不切断
                 if re.match(r'^([\u2460-\u2469]|\d+)$', clean_t): should_split = False
+                # [豁免 3] 若整行是标题行 (#/##)，标题与内容应一体，不切断（避免 "# \n\n 内容"）
+                if line_prefix.strip() in ("#", "##"): should_split = False
 
             if should_split:
                 formatted_text += "\n\n"
@@ -303,6 +305,10 @@ class LeninParser:
             # is_quote_continuation = True
             clean_line = clean_line[2:]
 
+        # 2. 标题续行拼接：上一段是标题且本行也是标题续行，去掉 "#" 前缀再拼
+        if not is_new_para and self.current_para and re.match(r'^#+\s', self.current_para) and re.match(r'^#+\s', clean_line):
+            clean_line = re.sub(r'^#+\s*', '', clean_line)
+
         if is_new_para:
             # 新段落：将旧段落推入 buffer，开始记录新段落
             if self.current_para:
@@ -407,6 +413,7 @@ class LeninParser:
                     body_lines_raw.extend(block["lines"])
 
             # === Pass 1: 处理正文区域 ===
+            last_line_prefix = ""
             for line in body_lines_raw:
                 line_text, prefix = self.process_spans_in_line(line, page_note_queue)
                 # [注意] strip() 在这里调用，去除 Raw 字符串里的物理缩进
@@ -417,7 +424,7 @@ class LeninParser:
                 if re.search(r'[—_]{8,}', clean_line):
                     continue # 跳过分割线
 
-                # 智能分段判断
+                # 智能分段判断（last_line_prefix 为上一行的 prefix，用于标题续行判定）
                 is_new = False
 
                 # [判定 1] 物理缩进 -> 新段落
@@ -428,9 +435,13 @@ class LeninParser:
                 if raw_text.startswith("　") or raw_text.startswith("  "):
                     is_new = True
 
-                # [判定 3] 标题强制换段
+                # [判定 3] 标题强制换段（但连续多行同标题视为续行，合并为一行）
                 if prefix.startswith("#"):
-                    is_new = True
+                    if last_line_prefix.strip().startswith("#"):
+                        # 上一行也是标题 -> 标题续行，不换段
+                        is_new = False
+                    else:
+                        is_new = True
 
                 # [判定 4] 引用块逻辑
                 if prefix.startswith(">"):
@@ -447,6 +458,7 @@ class LeninParser:
                     is_new = False
 
                 self.append_to_buffer(clean_line, is_new)
+                last_line_prefix = prefix
 
             # === Pass 2: 处理页底注脚区域 ===
             # 注脚也需要分段逻辑，但它是独立的 buffer
