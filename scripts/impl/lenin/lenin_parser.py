@@ -18,7 +18,7 @@ FONT_MAP = {
 
 # 页面布局参数（单位：PDF坐标点）
 # measure_margin: 左侧文字边缘 90，缩进后 110 → INDENT_THRESHOLD=105
-MARGIN_TOP_CUT = 80     # 顶部裁剪线：忽略此高度以上的页眉
+MARGIN_TOP_CUT = 110     # 顶部裁剪线：忽略此高度以上的页眉
 MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
 INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 缩进110）
