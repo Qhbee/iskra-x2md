@@ -4,7 +4,7 @@ from pathlib import Path
 # ================= 🎛️ 配置区域 =================
 
 # 1. 自动定位项目根目录
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 # 2. 输入文件路径
 INPUT_PDF = PROJECT_ROOT / "data/raw/stalin/斯大林选集_1-4卷_诸夏怀斯社.pdf"

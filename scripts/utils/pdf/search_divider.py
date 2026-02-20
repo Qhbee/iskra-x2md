@@ -1,7 +1,7 @@
 import fitz  # PyMuPDF
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INPUT_PDF = PROJECT_ROOT / "data/raw/stalin/斯大林选集_1-4卷_诸夏怀斯社.pdf"
 doc = fitz.open(INPUT_PDF)
 page = doc[192- 1]

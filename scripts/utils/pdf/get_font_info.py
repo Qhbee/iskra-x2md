@@ -4,7 +4,7 @@ from pathlib import Path
 
 # ================= 配置 =================
 # 自动定位路径
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INPUT_PDF = PROJECT_ROOT / "data/raw/stalin/斯大林选集_1-4卷_诸夏怀斯社.pdf"
 doc = fitz.open(INPUT_PDF)
 page = doc[177 - 1]

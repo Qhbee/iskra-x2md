@@ -4,7 +4,7 @@ from pathlib import Path
 # ================= 配置区域 =================
 # 1. 路径设置 (使用 pathlib 更优雅，且不依赖运行目录)
 # 自动定位到项目根目录 (即 scripts 的上一级)
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 # 拼接路径 (现在看起来是不是清爽多了？)
 INPUT_PDF  = PROJECT_ROOT / "data/raw/stalin/斯大林选集_1-4卷_诸夏怀斯社.pdf"
 OUTPUT_PDF = PROJECT_ROOT / "data/interim/stalin/斯大林选集_1-4卷_诸夏怀斯社_ruler.pdf"

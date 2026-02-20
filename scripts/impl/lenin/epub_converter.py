@@ -14,7 +14,7 @@ from epub_html_parser import clean_filename, parse_html_to_markdown
 
 # ==================== 仪表盘配置 ====================
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 INPUT_EPUB = PROJECT_ROOT / "data/raw/lenin/列宁全集.epub"
 OUTPUT_DIR = PROJECT_ROOT / "data/processed/lenin"
 
