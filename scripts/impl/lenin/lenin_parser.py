@@ -64,21 +64,28 @@ class LeninParser:
     def get_split_y(self, page):
         """
         计算正文和注脚的分割线 (Split Line) Y坐标
+        列宁全集：用矢量横线（从下往上第一条）
         逻辑：
-        1. 优先找实线分隔符，连续破折号 block
+        1. 优先找 get_drawings 中的横线（宽 60–75），非连续破折号 block，取从下往上第一条
         2. 其次找 '接上页' 这种全页注脚标记
         """
         blocks = page.get_text("blocks")
         page_height = page.rect.height
 
-        # 1. 扫描视觉分割线
-        for b in blocks:
-            text = b[4].strip()
-            y0 = b[1]
+        # 1. 矢量横线（从下往上第一条）
+        # 页眉线：宽度>200；正文/注脚分割线：宽度约 60–75
+        drawings = page.get_drawings()
+        h_lines = []
+        for d in drawings:
+            r = d.get("rect")
             # 特征匹配
-            if y0 > MARGIN_TOP_CUT:
-                if re.search(r'[—_]{8,}', text): # 匹配连续8个以上的长横线或下划线
-                    return y0 - 2   # 稍微往上提一点作为分界线
+            if not r or r.height >= 5:
+                continue
+            w = r.width
+            if 60 <= w <= 75:
+                h_lines.append(r.y0)
+        if h_lines:
+            return max(h_lines) - 2  # 稍微往上提一点作为分界线
 
         # 2. 扫描全页注脚标记
         check_count = 0
