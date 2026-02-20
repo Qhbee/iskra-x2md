@@ -4,7 +4,7 @@ import yaml
 from pathlib import Path
 
 # 导入我们的自定义解析器，而非官方的 pymupdf4llm
-from xxx_parser import XxxParser
+from lenin_parser import LeninParser
 
 # ==================== 📜 解析规则 ====================
 
@@ -17,8 +17,8 @@ from xxx_parser import XxxParser
 
 # 1. 路径配置 (定位到项目根目录)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-INPUT_PDF = PROJECT_ROOT / "data/raw/name/work.pdf"
-OUTPUT_DIR = PROJECT_ROOT / "data/processed/name/work"
+INPUT_PDF = PROJECT_ROOT / "data/raw/lenin/列宁全集（版本II-文字版）（完整书签版）/列宁全集 第1卷（1893年—1894年）.pdf"
+OUTPUT_DIR = PROJECT_ROOT / "data/processed/lenin/列宁全集（版本II-文字版）（完整书签版）/列宁全集 第1卷（1893年—1894年）"
 
 # 2. 安全模式
 # True = 侦察模式 (只看目录结构)
@@ -26,10 +26,10 @@ OUTPUT_DIR = PROJECT_ROOT / "data/processed/name/work"
 DRY_RUN = False
 
 # 3. 切分层级
-SPLIT_LEVEL = 5
+SPLIT_LEVEL = 1
 
 # 4. 黑名单
-BLACKLIST = ["总目录", "口号", "扉页", "封底", "斯大林历史档案选目录", "选自全集档案附卷"]
+BLACKLIST = ["目录"]
 
 
 # ==================== ⚙️ 智能引擎：转换逻辑 ====================
@@ -130,7 +130,7 @@ def main():
 
     # 初始化自定义解析器
     # 传入输出目录
-    parser = XxxParser(OUTPUT_DIR)
+    parser = LeninParser(OUTPUT_DIR)
 
     # 遍历书签
     for item in toc:
@@ -212,7 +212,7 @@ def main():
             print(f"{indent}🚀 转换“文章包” 📦 : {title} ({start + 1}-{end + 1})...")
 
             try:
-                # === 关键：传入页码列表，使用 StalinParser 一次性处理整节，而非逐页解析 ===
+                # === 关键：传入页码列表，使用 LeninParser 一次性处理整节，而非逐页解析 ===
                 pages_to_process = list(range(start, end + 1))
                 if not pages_to_process: continue
 
