@@ -468,7 +468,7 @@ class LeninParser:
                 last_line_prefix = prefix
 
             # === Pass 2: 处理页底注脚区域 ===
-            # 注脚也需要分段逻辑，但它是独立的 buffer
+            # 列宁的：每行都缩进，只有 ① 序号突出。只用序号判断新注脚，不用缩进。（斯大林的：需用缩进判断，因正文与注脚布局类似）
             current_foot_para = ""
             for line in foot_lines_raw:
                 raw_text = "".join([s["text"] for s in line["spans"]])
@@ -494,10 +494,8 @@ class LeninParser:
                         # 异常情况：页底有圈圈，但正文没引用？
                         # 兜底：生成一个随机ID或保留原样
                         clean_line = clean_line.replace(match.group(), f"[^x]: ", 1)
-                elif line["bbox"][0] > INDENT_THRESHOLD or raw_text.startswith("　"):
-                    is_new_foot = True
 
-                # 拼接注脚文本
+                # 拼接注脚文本（续行直接拼，不加换行）
                 if is_new_foot:
                     if current_foot_para:
                         self.all_footnotes.append(current_foot_para)
