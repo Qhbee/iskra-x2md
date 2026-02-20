@@ -19,6 +19,7 @@ FONT_MAP = {
 # 页面布局参数（单位：PDF坐标点）
 # measure_margin: 左侧文字边缘 90，缩进后 110 → INDENT_THRESHOLD=105
 MARGIN_TOP_CUT = 80     # 顶部裁剪线：忽略此高度以上的页眉
+MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
 INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 缩进110）
 CENTER_THRESHOLD = 120  # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
@@ -370,8 +371,10 @@ class LeninParser:
             split_y = self.get_split_y(page)
             # 计算裁剪框：去掉页眉
             actual_top_cut = min(MARGIN_TOP_CUT, split_y)
+            # 去掉底部有干扰信息的区域
+            clip_bottom = min(MARGIN_BOTTOM_CUT, page.rect.height)
             # 获取内容
-            clip_rect = fitz.Rect(0, actual_top_cut, page.rect.width, page.rect.height)
+            clip_rect = fitz.Rect(0, actual_top_cut, page.rect.width, clip_bottom)
             data = page.get_text("dict", clip=clip_rect)
 
             body_lines_raw = [] # 正文区域
