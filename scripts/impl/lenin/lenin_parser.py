@@ -23,6 +23,7 @@ MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
 INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 缩进110）
 CENTER_THRESHOLD = 120  # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
+SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
 
 
 # ================= ⚙️ 解析引擎 =================
@@ -48,6 +49,52 @@ class LeninParser:
         """检测字符是否为中日韩文字（用于判断是否需要加空格）"""
         if not char: return False
         return '\u4e00' <= char <= '\u9fff'
+
+    def merge_same_y_lines(self, lines):
+        """
+        合并同一视觉行的 PyMuPDF lines（y0 相同或接近）。
+        作用范围：单个 block 内的 lines（调用方传入 block["lines"]）。
+        根因：同一行文字可能被拆成多个 line（如 x0=125 与 x0=211），导致后半段被误判为 ###。
+        合并后取最左 x0 作为 bbox，正确识别为引用。
+        """
+        if not lines:
+            return []
+        # 按 y0 分组（容差 SAME_Y_TOLERANCE）
+        groups = []
+        for line in lines:
+            y0 = line["bbox"][1]
+            merged = False
+            for g in groups:
+                if abs(g["y0"] - y0) <= SAME_Y_TOLERANCE:
+                    g["lines"].append(line)
+                    merged = True
+                    break
+            if not merged:
+                groups.append({"y0": y0, "lines": [line]})
+
+        result = []
+        for g in groups:
+            ls = g["lines"]
+            if len(ls) == 1:
+                result.append(ls[0])
+            else:
+                # 按 x0 排序后合并
+                ls_sorted = sorted(ls, key=lambda l: l["bbox"][0])
+                merged_spans = []
+                x0_min, y0_min = float("inf"), float("inf")
+                x1_max, y1_max = 0, 0
+                for l in ls_sorted:
+                    merged_spans.extend(l["spans"])
+                    x0, y0, x1, y1 = l["bbox"]
+                    x0_min, y0_min = min(x0_min, x0), min(y0_min, y0)
+                    x1_max, y1_max = max(x1_max, x1), max(y1_max, y1)
+                result.append({
+                    "bbox": (x0_min, y0_min, x1_max, y1_max),
+                    "spans": merged_spans,
+                    "wmode": ls[0].get("wmode", 0),
+                    "dir": ls[0].get("dir", (1.0, 0.0)),
+                })
+        return result
 
     def clean_text(self, text):
         """
@@ -415,9 +462,11 @@ class LeninParser:
 
                 # 根据 Y 坐标划分区域，分流
                 if block["bbox"][1] >= split_y:
-                    foot_lines_raw.extend(block["lines"])
+                    # 注脚也合并同行，保持结构一致（注脚无 ### 判定，合并主要防断行）
+                    foot_lines_raw.extend(self.merge_same_y_lines(block["lines"]))
                 else:
-                    body_lines_raw.extend(block["lines"])
+                    # [核心修复] 合并同一视觉行：避免 "说：" 与 "'停止" 被拆成两 line 导致后者误判 ###
+                    body_lines_raw.extend(self.merge_same_y_lines(block["lines"]))
 
             # === Pass 1: 处理正文区域 ===
             last_line_prefix = ""
