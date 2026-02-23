@@ -24,8 +24,7 @@ DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测
 INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 缩进110）
 CENTER_THRESHOLD = 120  # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
-DOT_CHAR = "\u00B7"    # 字下加点/人名· 字符
-DOT_BELOW_THRESHOLD = 4  # ·的y0比前字大超过此值 -> 字下加点（人名·同基线）
+
 
 # ================= ⚙️ 解析引擎 =================
 # Page（页） -> Block（块） -> Line（行） -> Span（相同样式片段） -> Char（字符）
@@ -108,114 +107,6 @@ class LeninParser:
         text = re.sub(r'\[\s*接\s*上\s*页\s*\]', '', text)
         text = re.sub(r'\[\s*转\s*下\s*页\s*\]', '', text)
         return text
-
-    def process_underdot_in_chars(self, chars, prev_ended, prev_bold, curr_bold):
-        """
-        字下加点（underdot）：·在字下方->去·并标记；人名·(同基线)保留。
-        prev_ended+prev_bold+curr_bold：粗体 span 后接非粗体 span 时不续接（如 个->俄国工人）。
-        返回 (text, has_underdot, ended)
-        """
-        if not chars:
-            return ("", False, False)
-        skip, emph = [False] * len(chars), [False] * len(chars)
-        extend = prev_ended and (not prev_bold or curr_bold)
-
-        def is_dot_below(i):
-            if i <= 0 or chars[i].get("c") != DOT_CHAR:
-                return False
-            b, pb = chars[i].get("bbox", (0,)*4)[1], chars[i-1].get("bbox", (0,)*4)[1]
-            return self.is_cjk(chars[i-1].get("c", "")) and b > pb + DOT_BELOW_THRESHOLD
-
-        # 续接：上一 span 字下加点结尾，本 span 开头 CJK/空格 视为同 run；遇人名·停
-        if extend:
-            j = 0
-            while j < len(chars):
-                c = chars[j].get("c", "")
-                if j == 0 and c == DOT_CHAR:
-                    skip[j] = True
-                    j += 1
-                    continue
-                if c == DOT_CHAR and j > 0 and self.is_cjk(chars[j-1].get("c", "")):
-                    if is_dot_below(j):
-                        skip[j] = True  # 字下加点残留
-                    break
-                if self.is_cjk(c):
-                    emph[j] = True
-                    j += 1
-                elif c.strip() == "":
-                    j += 1
-                else:
-                    break
-
-        # 主循环：字后·为字下加点则 skip· 并向前标 emph
-        for i in range(len(chars)):
-            if chars[i].get("c") != DOT_CHAR or i == 0:
-                continue
-            if not is_dot_below(i):
-                continue
-            skip[i] = True
-            # [特殊] 若 · 在 span 末尾且前有较长 CJK 串（如 循着...走向·），
-            # 该 · 视为下一组字下加点的分隔符，不标前字为 emph（保持粗体）
-            run_len = 0
-            for j in range(i - 1, -1, -1):
-                if skip[j]: continue
-                if self.is_cjk(chars[j].get("c", "")):
-                    run_len += 1
-                else:
-                    break
-            if i == len(chars) - 1 and run_len >= 4:
-                pass  # 仅删除 ·，不标 emph
-            else:
-                for j in range(i - 1, -1, -1):
-                    if skip[j]: continue
-                    if self.is_cjk(chars[j].get("c", "")):
-                        emph[j] = True
-                    else:
-                        break
-
-        # 输出：跳过 skip，emph 的 run 输出纯文本（外层包 ***）
-        out, i, ended = [], 0, False
-        while i < len(chars):
-            if skip[i]:
-                i += 1
-                continue
-            if emph[i]:
-                run = []
-                while i < len(chars) and (emph[i] or skip[i]):
-                    if not skip[i]:
-                        run.append(chars[i].get("c", ""))
-                    i += 1
-                out.extend(run)
-                ended = True
-            else:
-                out.append(chars[i].get("c", ""))
-                ended = False
-                i += 1
-        return ("".join(out), any(emph), ended)
-
-    def merge_emphasis(self, s):
-        """合并相邻 *** 和 **，去 *** 前的残留 ·"""
-        for p in [r'\*\*\*\s*\*\*\*', r'\*\*\s*\*\*(?!\*)']:  # (?!\*) 否则 ·**全** ***世界*** 会被并成 ·**全*世界***，导致·不再紧挨***，影响后续，·\s*(?=\*\*\*) 无法删残留点
-            while True:
-                s, n = re.subn(p, '', s, count=1)
-                if n == 0:
-                    break
-        s = re.sub(r'\*\*·\*\*(\s*)(?=\*\*\*)', r'\1', s)  # **·** 在 *** 前
-        # 字下加点被拆成多 span（跨行/跨块）时，**X** 与 ***Y*** 可能相邻，合并为 ***XY***
-        # 阈值 ≤2 的来源：probe_dots_spans 可见，字下加点时每个 span 结构为 [字, ·]（1 汉字+1 点），且 · 属于下一字；
-        # 跨 span 拆开时前半段通常只有 1–2 个汉字（如 **胜** ***利的***、**胜利** ***的***）；
-        # 若 X>2 多为整句加粗接字下加点（如 **循着...走向** ***胜利的***），不应合并。
-        # 一五年、一九五〇年等：每字仍是 [字, ·]，拆分多为 **一五** ***年***（X=2）可合并；X=3 时不并。
-        def repl_merge_split_underdot(m):
-            x, y = m.group(1), m.group(2)
-            if len(x.strip()) <= 2 and self.is_cjk(x.strip()) and self.is_cjk(y.strip()):
-                return f'***{x}{y}***'
-            return m.group(0)
-        s = re.sub(r'\*\*([^*]+)\*\*\s*·\s*\*\*\*([^*]+)\*\*\*', repl_merge_split_underdot, s)
-        s = re.sub(r'\*\*([^*]+)\*\*\s+\*\*\*([^*]+)\*\*\*', repl_merge_split_underdot, s)
-        s = re.sub(r'·\s*(?=\*\*\*)', '', s)  # 合并后 和·***全世界*** -> 和***全世界***
-        s = re.sub(r'^\s*·\s*', '', s)  # 段落开头多余 ·（如 ·***共产主义革命*** 换段时）
-        return s
 
     def get_split_y(self, page):
         """
@@ -323,29 +214,23 @@ class LeninParser:
             last_type = "body"
 
         # --- 步骤 3: 逐个处理 span (内容拼接 & 行内样式) ---
-        # dict:    span 有 text，无 chars
-        # rawdict: span 无 text，有 chars
-        prev_ended, prev_bold = False, False
         for span in spans:
-            chars = span["chars"]
+            text = span["text"]
             size = span["size"]
             flags = span["flags"]
             font_lower = span["font"].lower()
 
-            is_bold = bool(flags & 16) or "hei" in font_lower or "bold" in font_lower
-            extend = prev_ended and (not prev_bold or is_bold)
-            text, has_underdot, ended = self.process_underdot_in_chars(chars, extend, prev_bold, is_bold)
-            prev_ended, prev_bold = ended, is_bold if ended else prev_bold
-
             text = self.clean_text(text)
             if not text: continue # 空内容跳过
 
+            # 字号→前缀映射（仅一次查找，供 current_type 与 span_prefix 共用）
             current_type = "body"
-            if size in FONT_MAP:
+            span_prefix = ""
+            if size and FONT_MAP:
                 span_closest = min(FONT_MAP.keys(), key=lambda k: abs(k - size))
                 if abs(span_closest - size) < 0.5:
-                    p = FONT_MAP[span_closest]
-                    if p.startswith("#"): current_type = "header"
+                    span_prefix = FONT_MAP[span_closest]
+                    if span_prefix.startswith("#"): current_type = "header"
 
             clean_t = text.strip()
             # 判断是否为纯标点（用于防止标题因标点被切断）
@@ -368,13 +253,7 @@ class LeninParser:
             if not is_punctuation:
                 last_type = current_type
 
-            # SUBTITLE (副标题) 特殊处理：加粗
-            span_prefix = ""
-            if FONT_MAP:
-                closest = min(FONT_MAP.keys(), key=lambda k: abs(k - size))
-                if abs(closest - size) < 0.5:
-                    span_prefix = FONT_MAP[closest]
-
+            # SUBTITLE (副标题) 特殊处理：加粗（span_prefix 已在上方算出）
             if span_prefix == "SUBTITLE":
                 if formatted_text and not formatted_text.endswith("\n"):
                     formatted_text += "\n\n"
@@ -390,7 +269,7 @@ class LeninParser:
             # 正则匹配 ① 到 ⑩ (\u2460 - \u2469)
             text = re.sub(r'[\u2460-\u2469]', replace_ref_body, text)
 
-            # [逻辑] 应用行内样式 (加粗/斜体)：字下加点->***，粗体->**，斜体->*
+            # [逻辑] 应用行内样式 (加粗/斜体)
             # 只有当这一行不是标题时才应用，避免 ### **Title** 这种冗余
             if not line_prefix.startswith("#"):
                 # PyMuPDF flags: 通过二进制位来存储信息的 int。用位运算来解读它：
@@ -401,14 +280,13 @@ class LeninParser:
                 if "hei" in font_lower or "bold" in font_lower: is_bold = True
                 if "kai" in font_lower: is_italic = True
 
-                if is_bold or is_italic or has_underdot:
+                if is_bold or is_italic:
                     # [关键修复]：只包裹核心文字，不包裹首尾空格
                     # 避免 "**    Text**" -> 导致无法 strip 掉缩进
                     # 改为 "    **Text**" -> 最后的 strip() 可以去掉缩进
 
-                    ct = text.strip()
-                    if not ct or ct == DOT_CHAR:
-                        pass  # 如果全是空格，或仅·不包格式（·为字下加点残留，merge 会删）
+                    if not text.strip():
+                        pass  # 如果全是空格，就不加粗了
                     else:
                         # 1. 提取左边空格
                         l_stripped = text.lstrip()
@@ -419,10 +297,10 @@ class LeninParser:
                         suffix_space = text[len(r_stripped):]
 
                         # 3. 提取核心文字
-                        content = ct
+                        content = text.strip()
 
-                        # 4. 包裹核心文字（字下加点用 *** 超级强调，GitHub 等对 <u> 支持差）
-                        if (is_bold and is_italic) or has_underdot:
+                        # 4. 包裹核心文字
+                        if is_bold and is_italic:
                             content = f"***{content}***"
                         elif is_bold:
                             content = f"**{content}**"
@@ -435,7 +313,6 @@ class LeninParser:
             formatted_text += text
 
         # --- 步骤 4: 智能后处理 (去空 & 缩进清洗) ---
-        # 不在行级别 merge_emphasis，由最终段落级别统一处理（见 parse_chapter_pages 末尾）
         formatted_text = formatted_text.strip()  # 在这里统一进行整体去空
 
         if line_prefix.strip().startswith("#"):
@@ -492,19 +369,10 @@ class LeninParser:
             if self.current_para:
                 merged = False
 
-                # [核心修复] 粗斜体/underdot融合
-                # 场景：Line1: "***开始***" + Line2: "***结束***" -> "***开始结束***"
-                if self.current_para.endswith("***") and clean_line.startswith("***"):
-                    raw_last = (self.current_para[:-3] or " ")[-1].replace("*","").replace("`","")
-                    raw_curr = (clean_line[3:] or " ")[0].replace("*","").replace("`","")
-                    if self.is_cjk(raw_last) and self.is_cjk(raw_curr):
-                        self.current_para = self.current_para[:-3] + clean_line[3:]
-                        merged = True
-
                 # [核心修复] 粗体融合 (Bold Fusion)
                 # 场景：Line1: "**开始**" + Line2: "**结束**" -> "**开始结束**"
                 # 避免出现 "**开始****结束**" 导致渲染断裂
-                elif self.current_para.endswith("**") and clean_line.startswith("**"):
+                if self.current_para.endswith("**") and clean_line.startswith("**"):
                     raw_last = self.current_para[:-2][-1].replace("*", "").replace("`", "")
                     raw_curr = clean_line[2:][0].replace("*", "").replace("`", "")
                     if self.is_cjk(raw_last) and self.is_cjk(raw_curr):
@@ -563,8 +431,7 @@ class LeninParser:
             clip_bottom = min(MARGIN_BOTTOM_CUT, page.rect.height)
             # 获取内容
             clip_rect = fitz.Rect(0, actual_top_cut, page.rect.width, clip_bottom)
-            # dict: span 级 / rawdict: 字符级
-            data = page.get_text("rawdict", clip=clip_rect)  # rawdict 用于字下加点 bbox 检测
+            data = page.get_text("dict", clip=clip_rect)
 
             body_lines_raw = [] # 正文区域
             foot_lines_raw = [] # 脚注区域
@@ -606,10 +473,6 @@ class LeninParser:
 
                 if not clean_line:
                     continue
-                # 跳过段落开头的孤立 ·（字下加点残留）：merge_emphasis 会清空它，
-                # 若此处不跳过，会作为独立段落 push，最终变成空串，导致 "\n\n".join 多出换行
-                if re.match(r'^\s*[·\u00B7]\s*$', clean_line):
-                    continue
                 if re.search(r'[—_]{8,}', clean_line):
                     continue # 跳过分割线
 
@@ -620,9 +483,7 @@ class LeninParser:
                 if line["bbox"][0] > INDENT_THRESHOLD:
                     is_new = True
                 # [判定 2] 空格缩进 (全角/半角) -> 新段落
-                # 原来用 dict     每个 span 里是 "text": "Some text"
-                # 现在用 rawdict  每个 span 里是 "chars": [{c:"S", bbox:...}, {c:"o", bbox:...}, ...]
-                raw_text = "".join("".join(c["c"] for c in s["chars"]) for s in line["spans"])
+                raw_text = "".join([s["text"] for s in line["spans"]])
                 if raw_text.startswith("　") or raw_text.startswith("  "):
                     is_new = True
 
@@ -655,9 +516,7 @@ class LeninParser:
             # 列宁的：每行都缩进，只有 ① 序号突出。只用序号判断新注脚，不用缩进。（斯大林的：需用缩进判断，因正文与注脚布局类似）
             current_foot_para = ""
             for line in foot_lines_raw:
-                # 原来用 dict     每个 span 里是 "text": "Some text"
-                # 现在用 rawdict  每个 span 里是 "chars": [{c:"S", bbox:...}, {c:"o", bbox:...}, ...]
-                raw_text = "".join("".join(c["c"] for c in s["chars"]) for s in line["spans"])
+                raw_text = "".join([s["text"] for s in line["spans"]])
                 clean_line = self.clean_text(raw_text).strip()
                 if not clean_line:
                     continue
@@ -717,8 +576,6 @@ class LeninParser:
                 merged_buffer[-1] = prev_block + "\n>" + "\n" + block
             else:
                 merged_buffer.append(block)
-
-        merged_buffer = [self.merge_emphasis(b) for b in merged_buffer]
 
         # 最终组装全文
         full_md = "\n\n".join(merged_buffer)
