@@ -372,7 +372,7 @@ class LeninParser:
             # [标点外置] 句末标点 。！？ 置于 **/* 之外，避免 Markdown 渲染异常
             # 如 **社会的。** → **社会的**。必须校验 clean_c 非空，否则 clean_c="" 时 "" in '。！？' 为 True，
             # 会误把空格当标点处理，导致 **总  计** 变成 **总** ** 计**
-            if clean_c and clean_c in '。！？' and (in_bold or in_italic):
+            if clean_c and clean_c in '。！？，、；：' and (in_bold or in_italic):
                 if in_italic:
                     formatted_text += "*"
                     in_italic = False
