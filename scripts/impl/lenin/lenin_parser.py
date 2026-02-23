@@ -223,12 +223,14 @@ class LeninParser:
             text = self.clean_text(text)
             if not text: continue # 空内容跳过
 
+            # 字号→前缀映射（仅一次查找，供 current_type 与 span_prefix 共用）
             current_type = "body"
-            if size in FONT_MAP:
+            span_prefix = ""
+            if size and FONT_MAP:
                 span_closest = min(FONT_MAP.keys(), key=lambda k: abs(k - size))
                 if abs(span_closest - size) < 0.5:
-                    p = FONT_MAP[span_closest]
-                    if p.startswith("#"): current_type = "header"
+                    span_prefix = FONT_MAP[span_closest]
+                    if span_prefix.startswith("#"): current_type = "header"
 
             clean_t = text.strip()
             # 判断是否为纯标点（用于防止标题因标点被切断）
@@ -251,13 +253,7 @@ class LeninParser:
             if not is_punctuation:
                 last_type = current_type
 
-            # SUBTITLE (副标题) 特殊处理：加粗
-            span_prefix = ""
-            if FONT_MAP:
-                closest = min(FONT_MAP.keys(), key=lambda k: abs(k - size))
-                if abs(closest - size) < 0.5:
-                    span_prefix = FONT_MAP[closest]
-
+            # SUBTITLE (副标题) 特殊处理：加粗（span_prefix 已在上方算出）
             if span_prefix == "SUBTITLE":
                 if formatted_text and not formatted_text.endswith("\n"):
                     formatted_text += "\n\n"
