@@ -31,6 +31,13 @@ SPLIT_LEVEL = 1
 # 4. 黑名单
 BLACKLIST = ["目录"]
 
+# 5. 强制 md 级：以下标题无论书签层级如何，一律视为独立文件（如书签层级错误时用）
+#    限制：仅适用于「父级末尾」的 force_md 子级（如附录末尾的注释、年表）。
+#    若 force_md 穿插在父级中间（如附录 100-600，注释 200-300，年表 400-500），
+#    边界计算会错误：父级只剩开头段，中间 force_md 会互相“吃掉”间隙。
+#    因此一般只把书签最后几个层级错误的项加入本列表。
+FORCE_MD_TITLES = ["注释", "年表"]
+
 
 # ==================== ⚙️ 智能引擎：转换逻辑 ====================
 
@@ -68,13 +75,16 @@ def extract_toc_structure(doc):
             is_blacklisted = True
             skipping_level = lvl
 
+        force_md = bool(FORCE_MD_TITLES and title.strip() in FORCE_MD_TITLES)
         full_list.append({
             "level": lvl,
             "title": title.strip(),
             "start": page - 1,
             "end": -1,  # 待计算
             "is_blacklisted": is_blacklisted,  # 关键标记
-            "has_children": False  # 默认为 False，稍后计算
+            "has_children": False,   # 默认为 False，稍后计算
+            "force_md": force_md,
+            "effective_level": SPLIT_LEVEL if force_md else lvl,  # 强制 md 视为 SPLIT_LEVEL 层级
         })
 
     # --- 第二步：计算 has_children ---
@@ -83,15 +93,18 @@ def extract_toc_structure(doc):
         if full_list[i + 1]['level'] > full_list[i]['level']:
             full_list[i]['has_children'] = True
 
-    # --- 第三步：计算页码 (使用包含黑名单的全量列表作为参考) ---
+    # --- 第三步：计算页码 (用 effective_level，force_md 子级视为同级边界，使用包含黑名单的全量列表作为参考) ---
+    # 父级 end = 下一个同级/更高级节点的 start - 1。force_md 的 effective_level=SPLIT_LEVEL，
+    # 会截断父级。此逻辑仅正确适用于 force_md 连续排在父级末尾的情形（见 FORCE_MD_TITLES 注释）。
     for i in range(len(full_list)):
         current = full_list[i]
 
-        # 寻找下一个“同级或更高级”的节点 (作为物理边界)
+        # 寻找下一个“有效同级或更高级”的节点 (作为物理边界)
         # 即使那个节点是黑名单，它也是物理存在的，必须作为边界！
+        # force_md 子级（如 注释）的 effective_level=SPLIT_LEVEL，会截断父级范围
         boundary_index = -1
         for j in range(i + 1, len(full_list)):
-            if full_list[j]['level'] <= current['level']:
+            if full_list[j]['effective_level'] <= current['effective_level']:
                 boundary_index = j
                 break
 
@@ -146,22 +159,27 @@ def main():
         for k in list(title_stack.keys()):
             if k > lvl: del title_stack[k]
 
-        indent = "  " * (lvl - 1)
+        # force_md 用 effective_level 控制缩进，与父级同级显示
+        indent = "  " * (item.get("effective_level", lvl) - 1)
 
         # ========== 🧠 智能判定逻辑 ==========
 
+        # 判定 0: 强制 md 级（书签层级错误时覆盖）
+        force_md = item.get("force_md", False)  # 已在 extract_toc_structure 中计算
+
         # 判定 1: 这是一个文件吗？
+        # 条件 X: 强制 md 级
         # 条件 A: 刚好到达切分层级 (L5)
         # 条件 B: 还没到层级 (L3, L4)，但是它没有子节点了 (光杆司令，如"口号")
-        is_file = (lvl == SPLIT_LEVEL) or (lvl < SPLIT_LEVEL and not has_children)
+        is_file = force_md or (lvl == SPLIT_LEVEL) or (lvl < SPLIT_LEVEL and not has_children)
 
         # 判定 2: 这是一个文件夹吗？
-        # 条件: 还没到层级，且有子节点 (容器，如"正文")
-        is_folder = (lvl < SPLIT_LEVEL and has_children)
+        # 条件: 非强制 md，还没到层级，且有子节点 (容器，如"正文")
+        is_folder = not force_md and (lvl < SPLIT_LEVEL and has_children)
 
         # 判定 3: 它是文件里的标题吗？
-        # 条件: 超过了层级 (L6+)
-        is_content = (lvl > SPLIT_LEVEL)
+        # 条件: 非强制 md，且超过了层级 (L6+)
+        is_content = not force_md and (lvl > SPLIT_LEVEL)
 
         # ========== 🚧 执行动作 ==========
 
