@@ -356,6 +356,19 @@ class LeninParser:
             if line_prefix.strip().startswith("#"):
                 need_bold, need_italic = False, False
 
+            # [标点外置] 句末标点 。！？ 置于 **/* 之外，避免 Markdown 渲染异常
+            # 如 **社会的。** → **社会的**。必须校验 clean_c 非空，否则 clean_c="" 时 "" in '。！？' 为 True，
+            # 会误把空格当标点处理，导致 **总  计** 变成 **总** ** 计**
+            if clean_c and clean_c in '。！？' and (in_bold or in_italic):
+                if in_italic:
+                    formatted_text += "*"
+                    in_italic = False
+                if in_bold:
+                    formatted_text += "**"
+                    in_bold = False
+                formatted_text += ch
+                continue
+
             # 变量	      含义
             # need_bold	  当前字符是否应当加粗（由字体/标志决定）
             # need_italic 当前字符是否应当斜体（由字体/标志决定）
