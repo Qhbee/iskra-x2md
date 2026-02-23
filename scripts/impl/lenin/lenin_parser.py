@@ -160,8 +160,7 @@ class LeninParser:
         2. 标题层级判定
         3. 注脚符号替换
         4. 智能去空（修复标题空格）
-        返回 (formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote)
-        is_heiti_indent_quote: 当前行是否因黑体双/单缩进得 "> "（用于仅对此类引用做续行合并）
+        返回 (formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation)
         """
         spans = line["spans"]
         formatted_text = ""
@@ -187,7 +186,8 @@ class LeninParser:
         # --- 步骤 2: 决定整行的前缀 (Markdown Syntax) ---
         line_prefix = ""
         mapped_prefix = ""
-        is_heiti_indent_quote = False  # 仅黑体双/单缩进得 "> " 时 True
+        is_heiti_indent_quote = False  # 任意黑体缩进得 "> " 时 True
+        is_heiti_single_indent_continuation = False  # 仅 2.3 单缩进续行时 True，用于续行合并
 
         # 先看字号映射
         if FONT_MAP:
@@ -203,14 +203,15 @@ class LeninParser:
         # 2.1 居中的黑体 (x0 >= CENTER) -> 三级标题 (###)
         elif has_heiti and x0 >= CENTER_THRESHOLD:
             line_prefix = "### "
-        # 2.2 双缩进黑体 (INDENT_2 < x0 < CENTER) -> 引用
+        # 2.2 双缩进黑体 (INDENT_2 < x0 < CENTER) -> 引用（新块，不接续上一引用）
         elif has_heiti and x0 > INDENT_2_THRESHOLD:
             line_prefix = "> "
             is_heiti_indent_quote = True
-        # 2.3 单缩进黑体 (INDENT < x0 <= INDENT_2) -> 引用 仅当上一行为引用续行
+        # 2.3 单缩进黑体 (INDENT < x0 <= INDENT_2) -> 引用 仅当上一行为引用续行；是续行，可合并
         elif has_heiti and x0 > INDENT_THRESHOLD and (prev_line_prefix or "").strip().startswith(">"):
             line_prefix = "> "
             is_heiti_indent_quote = True
+            is_heiti_single_indent_continuation = True
         # 3. 仿宋字体 -> 引用块
         elif has_fangsong:
             line_prefix = "> "
@@ -247,7 +248,7 @@ class LeninParser:
                 chars_list.append((c["c"], c["bbox"], font_lower, size, flags))
 
         if not chars_list:
-            return formatted_text.strip(), line_prefix, False, None, is_heiti_indent_quote
+            return formatted_text.strip(), line_prefix, False, None, is_heiti_indent_quote, is_heiti_single_indent_continuation
 
         # --- 步骤 4: 字下加点标记（· 属于下一字，跨行靠 prev_underdot / prev_last_bbox 传入）---
         is_skip = [False] * len(chars_list)
@@ -448,7 +449,7 @@ class LeninParser:
             content = formatted_text[prefix_len:].strip()
             formatted_text = line_prefix + content
 
-        return formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote
+        return formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation
 
     def append_to_buffer(self, clean_line, is_new_para):
         """
@@ -596,7 +597,7 @@ class LeninParser:
             last_line_prefix = ""
             last_is_heiti_indent_quote = False
             for line in body_lines_raw:
-                line_text, prefix, underdot_pending, last_bbox, is_heiti_indent_quote = self.process_spans_in_line(
+                line_text, prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation = self.process_spans_in_line(
                     line, page_note_queue, underdot_pending, last_bbox, last_line_prefix
                 )
                 # [注意] strip() 在这里调用，去除 Raw 字符串里的物理缩进
@@ -633,8 +634,8 @@ class LeninParser:
                     # [核心修复] 正文/引用防粘连
                     if self.current_para and not self.current_para.startswith("> "):
                         is_new = True
-                    # 仅黑体双/单缩进引用接引用 -> 续行；仿宋、小字等引用不合并
-                    elif last_is_heiti_indent_quote and is_heiti_indent_quote:
+                    # 仅 黑体双缩进+黑体单缩进续行 合并；黑体双缩进+黑体双缩进 不合并（换行）；仿宋、小字等引用不合并
+                    elif last_is_heiti_indent_quote and is_heiti_single_indent_continuation:
                         is_new = False
 
                 # [核心修复] 注脚跟随 (去掉 $)
