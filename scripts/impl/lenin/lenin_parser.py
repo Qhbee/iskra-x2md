@@ -629,9 +629,11 @@ class LeninParser:
                 self.append_to_buffer(clean_line, is_new)
                 last_line_prefix = prefix
 
-            # === Pass 2: 处理页底注脚区域 ===
+            # === Pass 2: 处理页底注脚区域（基于 Y 坐标匹配）===
             # 列宁的：每行都缩进，只有 ① 序号突出。只用序号判断新注脚，不用缩进。（斯大林的：需用缩进判断，因正文与注脚布局类似）
-            current_foot_para = ""
+            # 根因：PDF 中 ① 与 ① 的内容可能在不同 block，按行顺序会错配。
+            # 解决：每行保留 y0，内容行归属 y0 最近的 ① 符号。
+            foot_items = []  # (y0, raw_text, is_marker, line)
             for line in foot_lines_raw:
                 # 原来用 dict     每个 span 里是 "text": "Some text"
                 # 现在用 rawdict  每个 span 里是 "chars": [{c:"S", bbox:...}, {c:"o", bbox:...}, ...]
@@ -642,39 +644,52 @@ class LeninParser:
                 if re.search(r'[—_]{8,}', clean_line):
                     continue
 
-                # 检测注脚开头是否有符号：① 或 [^1]
-                match = re.match(r'^[\u2460-\u2469]', clean_line)
-                is_new_foot = False
+                y0 = line["bbox"][1]
+                # 检测注脚开头是否有符号：①
+                is_marker = bool(re.match(r'^[\u2460-\u2469]', clean_line))
+                foot_items.append((y0, clean_line, is_marker, line))
 
-                if match:
-                    is_new_foot = True
-                    # 将 PDF 的圈圈数字替换为 Markdown 的 [^n]
-                    if page_note_queue:
-                        # 从队列领号
-                        note_id = page_note_queue.pop(0)
-                        # 替换符号
-                        clean_line = clean_line.replace(match.group(), f"[^{note_id}]: ", 1)
-                    else:
-                        # 异常情况：页底有圈圈，但正文没引用？
-                        # 兜底：生成一个随机ID或保留原样
-                        clean_line = clean_line.replace(match.group(), f"[^x]: ", 1)
-
-                # 拼接注脚文本（续行直接拼，不加换行）
-                if is_new_foot:
-                    if current_foot_para:
-                        self.all_footnotes.append(current_foot_para)
-                    current_foot_para = clean_line
+            # 1. 标记行按 y0 排序，领号
+            markers = [(y0, txt) for y0, txt, is_m, _ in foot_items if is_m]
+            markers.sort(key=lambda x: x[0])
+            marker_to_id = {}  # index -> note_id
+            for i, (_, _) in enumerate(markers):
+                if page_note_queue:
+                    marker_to_id[i] = page_note_queue.pop(0)
                 else:
-                    if current_foot_para:
-                        current_foot_para += clean_line
-                    elif self.all_footnotes:
-                        self.all_footnotes[-1] += clean_line
-                    else:
-                        current_foot_para = clean_line
+                    marker_to_id[i] = None  # 用 [^x] 兜底
 
-            # 本页最后一个注脚段落
-            if current_foot_para:
-                self.all_footnotes.append(current_foot_para)
+            # 2. 内容行归属：上方最近的标记（y 从上往下增，故取 marker_y0 <= content_y0 中最大者）
+            # 例：① 415、② 426，内容 423 属 ①（不可用“最接近”否则会错归 ②）
+            marker_y0s = [m[0] for m in markers]
+            content_by_marker = {i: [] for i in range(len(markers))} if markers else {}
+            for y0, clean_line, is_marker, _ in foot_items:
+                if is_marker:
+                    continue
+                if not marker_y0s:
+                    if self.all_footnotes:
+                        self.all_footnotes[-1] += clean_line
+                    continue
+                # 上方最近：marker_y0 <= y0 中取最大；若无则取最小（内容在首 marker 之上）
+                above = [(i, my) for i, my in enumerate(marker_y0s) if my <= y0]
+                if above:
+                    best_i = max(above, key=lambda x: x[1])[0]
+                else:
+                    best_i = min(range(len(marker_y0s)), key=lambda i: marker_y0s[i])
+                content_by_marker[best_i].append((y0, clean_line))
+
+            # 3. 按 marker 顺序输出，每 marker 的内容按 y0 排序后拼接
+            for i in range(len(markers)):
+                note_id = marker_to_id[i]
+                prefix = f"[^{note_id}]: " if note_id else "[^x]: "
+                marker_txt = re.sub(r'^[\u2460-\u2469]\s*', '', markers[i][1]).strip()  # 去掉符号，可能带内容
+                parts = []
+                if marker_txt:
+                    parts.append(marker_txt)
+                for _, ct in sorted(content_by_marker[i], key=lambda x: x[0]):
+                    parts.append(ct)
+                body = "".join(parts)
+                self.all_footnotes.append(prefix + body)
 
         # 刷新最后的正文缓存
         if self.current_para:
