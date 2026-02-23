@@ -21,8 +21,9 @@ FONT_MAP = {
 MARGIN_TOP_CUT = 110     # 顶部裁剪线：忽略此高度以上的页眉
 MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
-INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 缩进110）
-CENTER_THRESHOLD = 120  # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
+INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 单缩进110 双缩进130）
+INDENT_2_THRESHOLD = 120  # 双缩进阈值：黑体且X坐标大于此值 → 引用；单缩进黑体仅当上一行为引用续行时 → 引用
+CENTER_THRESHOLD = 150   # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
 DOT_CHAR = "\u00B7"    # 字下加点 / 人名间隔符
 DOT_BELOW_THRESHOLD = 4  # · 的 y0 比前字大超过此值 → 字下加点（人名· 同基线则小）
@@ -151,7 +152,7 @@ class LeninParser:
 
         return page_height # 没找到分割线，说明全是正文
 
-    def process_spans_in_line(self, line, page_note_queue, prev_underdot=False, prev_last_bbox=None):
+    def process_spans_in_line(self, line, page_note_queue, prev_underdot=False, prev_last_bbox=None, prev_line_prefix=""):
         """
         [核心函数] 处理单行内的所有 span（rawdict 字符级），负责：
         0. 字下加点：· 属于下一字，y 低于前字则标为字下加点，跨行跨块传递 prev_underdot/prev_last_bbox
@@ -159,7 +160,8 @@ class LeninParser:
         2. 标题层级判定
         3. 注脚符号替换
         4. 智能去空（修复标题空格）
-        返回 (formatted_text, line_prefix, underdot_pending, last_bbox)
+        返回 (formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote)
+        is_heiti_indent_quote: 当前行是否因黑体双/单缩进得 "> "（用于仅对此类引用做续行合并）
         """
         spans = line["spans"]
         formatted_text = ""
@@ -185,6 +187,7 @@ class LeninParser:
         # --- 步骤 2: 决定整行的前缀 (Markdown Syntax) ---
         line_prefix = ""
         mapped_prefix = ""
+        is_heiti_indent_quote = False  # 仅黑体双/单缩进得 "> " 时 True
 
         # 先看字号映射
         if FONT_MAP:
@@ -194,11 +197,20 @@ class LeninParser:
 
         # 判定优先级：
         # 1. 字号巨大的标题 (#, ##)
+        x0 = line["bbox"][0]
         if mapped_prefix.startswith("#"):
             line_prefix = mapped_prefix
-        # 2. 居中的黑体 -> 强制视为三级标题 (###)
-        elif has_heiti and line["bbox"][0] > CENTER_THRESHOLD:
+        # 2.1 居中的黑体 (x0 >= CENTER) -> 三级标题 (###)
+        elif has_heiti and x0 >= CENTER_THRESHOLD:
             line_prefix = "### "
+        # 2.2 双缩进黑体 (INDENT_2 < x0 < CENTER) -> 引用
+        elif has_heiti and x0 > INDENT_2_THRESHOLD:
+            line_prefix = "> "
+            is_heiti_indent_quote = True
+        # 2.3 单缩进黑体 (INDENT < x0 <= INDENT_2) -> 引用 仅当上一行为引用续行
+        elif has_heiti and x0 > INDENT_THRESHOLD and (prev_line_prefix or "").strip().startswith(">"):
+            line_prefix = "> "
+            is_heiti_indent_quote = True
         # 3. 仿宋字体 -> 引用块
         elif has_fangsong:
             line_prefix = "> "
@@ -235,7 +247,7 @@ class LeninParser:
                 chars_list.append((c["c"], c["bbox"], font_lower, size, flags))
 
         if not chars_list:
-            return formatted_text.strip(), line_prefix, False, None
+            return formatted_text.strip(), line_prefix, False, None, is_heiti_indent_quote
 
         # --- 步骤 4: 字下加点标记（· 属于下一字，跨行靠 prev_underdot / prev_last_bbox 传入）---
         is_skip = [False] * len(chars_list)
@@ -436,7 +448,7 @@ class LeninParser:
             content = formatted_text[prefix_len:].strip()
             formatted_text = line_prefix + content
 
-        return formatted_text, line_prefix, underdot_pending, last_bbox
+        return formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote
 
     def append_to_buffer(self, clean_line, is_new_para):
         """
@@ -577,11 +589,15 @@ class LeninParser:
                     # [核心修复] 合并同一视觉行：避免 "说：" 与 "'停止" 被拆成两 line 导致后者误判 ###
                     body_lines_raw.extend(self.merge_same_y_lines(block["lines"]))
 
+            # [核心修复] 跨块合并：同一视觉行可能被拆到不同 block（如 民主主义 的「义」在另一 block）
+            body_lines_raw = self.merge_same_y_lines(body_lines_raw)
+
             # === Pass 1: 处理正文区域 ===
             last_line_prefix = ""
+            last_is_heiti_indent_quote = False
             for line in body_lines_raw:
-                line_text, prefix, underdot_pending, last_bbox = self.process_spans_in_line(
-                    line, page_note_queue, underdot_pending, last_bbox
+                line_text, prefix, underdot_pending, last_bbox, is_heiti_indent_quote = self.process_spans_in_line(
+                    line, page_note_queue, underdot_pending, last_bbox, last_line_prefix
                 )
                 # [注意] strip() 在这里调用，去除 Raw 字符串里的物理缩进
                 clean_line = self.remove_page_marks(line_text).strip()
@@ -615,10 +631,10 @@ class LeninParser:
                 # [判定 4] 引用块逻辑
                 if prefix.startswith(">"):
                     # [核心修复] 正文/引用防粘连
-                    # 如果上一段是正文(不带>)，这一段是引用(带>) -> 强制换段 (如文末出版信息)
                     if self.current_para and not self.current_para.startswith("> "):
                         is_new = True
-                    elif not is_new:  # 如果是引用接引用，且无缩进 -> 视为续行
+                    # 仅黑体双/单缩进引用接引用 -> 续行；仿宋、小字等引用不合并
+                    elif last_is_heiti_indent_quote and is_heiti_indent_quote:
                         is_new = False
 
                 # [核心修复] 注脚跟随 (去掉 $)
@@ -628,6 +644,7 @@ class LeninParser:
 
                 self.append_to_buffer(clean_line, is_new)
                 last_line_prefix = prefix
+                last_is_heiti_indent_quote = is_heiti_indent_quote
 
             # === Pass 2: 处理页底注脚区域（基于 Y 坐标匹配）===
             # 列宁的：每行都缩进，只有 ① 序号突出。只用序号判断新注脚，不用缩进。（斯大林的：需用缩进判断，因正文与注脚布局类似）
