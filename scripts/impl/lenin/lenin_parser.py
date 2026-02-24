@@ -556,13 +556,12 @@ class LeninParser:
             page_num = page.number + 1  # 人类阅读页码 (1-based)
             # 获取分割线位置，区分正文和注脚
             split_y = self.get_split_y(page)
-            # 计算裁剪框：去掉页眉
+            # 计算裁剪框：去掉页眉（仅用于过滤文本块）
             actual_top_cut = min(MARGIN_TOP_CUT, split_y)
             # 去掉底部有干扰信息的区域
             clip_bottom = min(MARGIN_BOTTOM_CUT, page.rect.height)
-            # 获取内容
-            clip_rect = fitz.Rect(0, actual_top_cut, page.rect.width, clip_bottom)
-            data = page.get_text("rawdict", clip=clip_rect)
+            # 获取内容：用全页 clip，图片不受裁剪；文本块稍后按区域过滤
+            data = page.get_text("rawdict", clip=page.rect)
 
             body_lines_raw = [] # 正文区域
             foot_lines_raw = [] # 脚注区域
@@ -570,7 +569,7 @@ class LeninParser:
 
             # 遍历块，分流图片、正文行、注脚行
             for block in data["blocks"]:
-                # --- 图片处理 ---
+                # --- 图片处理：不受 clip 影响，全页图片都保留 ---
                 if "image" in block:
                     self.img_counter += 1
                     img_filename = f"img_{self.img_counter}.png"
@@ -587,8 +586,12 @@ class LeninParser:
                 if "lines" not in block:
                     continue
 
-                # 根据 Y 坐标划分区域，分流
-                if block["bbox"][1] >= split_y:
+                bbox_y0 = block["bbox"][1]
+                # 文本块按区域过滤（替代原来的 clip）：跳过页眉、底部干扰区
+                if bbox_y0 < actual_top_cut or bbox_y0 > clip_bottom:
+                    continue
+                # 根据 Y 坐标划分正文/注脚区域，分流
+                if bbox_y0 >= split_y:
                     # 注脚也合并同行，保持结构一致（注脚无 ### 判定，合并主要防断行）
                     foot_lines_raw.extend(self.merge_same_y_lines(block["lines"]))
                 else:
