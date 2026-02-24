@@ -12,6 +12,7 @@ FONT_MAP = {
     13.0: "## ",      # 二级标题
     11.0: "### ",     # 三级标题
     # 11.0: "SUBTITLE",  # 副标题（会被加粗处理）也可能是 9.6
+    8.2: "> ",        # 默认引用（正文中的诗歌等引用）
     7.4: "> ",        # 默认引用（通常用于文末出版信息，优先级低于字体检测）
     # 9.6 正文，不加前缀
 }
@@ -154,7 +155,7 @@ class LeninParser:
 
         return page_height # 没找到分割线，说明全是正文
 
-    def process_spans_in_line(self, line, page_note_queue, prev_underdot=False, prev_last_bbox=None, prev_line_prefix=""):
+    def process_spans_in_line(self, line, page_note_queue, prev_underdot=False, prev_last_bbox=None, prev_line_prefix="", article_title=None):
         """
         [核心函数] 处理单行内的所有 span（rawdict 字符级），负责：
         0. 字下加点：· 属于下一字，y 低于前字则标为字下加点，跨行跨块传递 prev_underdot/prev_last_bbox
@@ -214,11 +215,12 @@ class LeninParser:
             line_prefix = "> "
             is_heiti_indent_quote = True
             is_heiti_single_indent_continuation = True
-        # 3. 仿宋字体 -> 引用块
-        elif has_fangsong:
+        # 3. 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
+        elif has_fangsong and article_title != "注释":
             line_prefix = "> "
-        # 4. 14号小字 -> 引用块 (排除楷体和黑体，避免误伤注脚或强调文本)
-        elif mapped_prefix == "> " and not has_kaiti and not has_heiti:
+        # 4. 7.4 和 8.2号小字 -> 引用块 (排除楷体和黑体，避免误伤注脚或强调文本)
+        # 注释章节跳过：8.2 会误给续行加 > ，破坏列表格式
+        elif mapped_prefix == "> " and not has_kaiti and not has_heiti and article_title != "注释":
             line_prefix = "> "
 
         # 如果有前缀，先拼接到结果中
@@ -601,7 +603,7 @@ class LeninParser:
             last_is_heiti_indent_quote = False
             for line in body_lines_raw:
                 line_text, prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation = self.process_spans_in_line(
-                    line, page_note_queue, underdot_pending, last_bbox, last_line_prefix
+                    line, page_note_queue, underdot_pending, last_bbox, last_line_prefix, article_title
                 )
                 # [注意] strip() 在这里调用，去除 Raw 字符串里的物理缩进
                 clean_line = self.remove_page_marks(line_text).strip()
