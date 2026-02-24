@@ -17,8 +17,8 @@ from lenin_parser import LeninParser
 
 # 1. 路径配置 (定位到项目根目录)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-INPUT_PDF = PROJECT_ROOT / "data/raw/lenin/列宁全集（版本II-文字版）（完整书签版）/列宁全集 第1卷（1893年—1894年）.pdf"
-OUTPUT_DIR = PROJECT_ROOT / "data/processed/lenin/列宁全集（版本II-文字版）（完整书签版）/列宁全集 第1卷（1893年—1894年）"
+INPUT_DIR = PROJECT_ROOT / "data/raw/lenin/列宁全集（版本II-文字版）（完整书签版）"
+OUTPUT_BASE = PROJECT_ROOT / "data/processed/lenin/列宁全集（版本II-文字版）（完整书签版）"
 
 # 2. 安全模式
 # True = 侦察模式 (只看目录结构)
@@ -126,24 +126,25 @@ def extract_toc_structure(doc):
     return [item for item in full_list if not item['is_blacklisted']]
 
 
-def main():
-    print(f"📖 读取: {INPUT_PDF.name}")
+def process_one_pdf(input_pdf: Path, output_dir: Path):
+    """处理单个 PDF 的转换逻辑"""
+    print(f"📖 读取: {input_pdf.name}")
     try:
-        doc = fitz.open(INPUT_PDF)
+        doc = fitz.open(input_pdf)
     except Exception as e:
-        print(f"❌ 无法打开: {e}")
+        print(f"❌ 无法打开 {input_pdf.name}: {e}")
         return
 
     toc = extract_toc_structure(doc)
     print(f"🔍 有效书签: {len(toc)} 个\n")
 
     # 路径栈和标题栈
-    path_stack = {0: OUTPUT_DIR}
+    path_stack = {0: output_dir}
     title_stack = {}
 
     # 初始化自定义解析器
     # 传入输出目录
-    parser = LeninParser(OUTPUT_DIR)
+    parser = LeninParser(output_dir)
 
     # 遍历书签
     for item in toc:
@@ -199,7 +200,7 @@ def main():
 
         if is_folder:
             safe_name = clean_filename(title)
-            parent = path_stack.get(lvl - 1, OUTPUT_DIR)
+            parent = path_stack.get(lvl - 1, output_dir)
             current_path = parent / safe_name
 
             if not current_path.exists():
@@ -209,7 +210,7 @@ def main():
             print(f"{indent}📂 创建目录: {title}")
 
         elif is_file:
-            parent = path_stack.get(lvl - 1, OUTPUT_DIR)
+            parent = path_stack.get(lvl - 1, output_dir)
             article_dir = parent / clean_filename(title)
             file_path = article_dir / "index.md"
 
@@ -223,7 +224,7 @@ def main():
                 "title": title,
                 "order": start + 1,
                 "category": "/".join(cats),
-                "book": INPUT_PDF.stem
+                "book": input_pdf.stem
             }
 
             # 采用 Page Bundles 模式
@@ -245,6 +246,33 @@ def main():
 
             except Exception as e:
                 print(f"{indent}❌ 失败: {e}")
+
+    doc.close()
+
+
+def main():
+    if not INPUT_DIR.exists():
+        print(f"❌ 输入目录不存在: {INPUT_DIR}")
+        return
+
+    pdf_files = sorted(INPUT_DIR.glob("*.pdf"))
+    if not pdf_files:
+        print(f"❌ 目录下无 PDF 文件: {INPUT_DIR}")
+        return
+
+    OUTPUT_BASE.mkdir(parents=True, exist_ok=True)
+    print(f"📂 输入目录: {INPUT_DIR}")
+    print(f"📂 输出目录: {OUTPUT_BASE}")
+    print(f"📄 共 {len(pdf_files)} 个 PDF\n")
+
+    for i, input_pdf in enumerate(pdf_files):
+        output_dir = OUTPUT_BASE / input_pdf.stem
+        print("=" * 60)
+        print(f"📖 [{i + 1}/{len(pdf_files)}] {input_pdf.name}")
+        print("=" * 60)
+        process_one_pdf(input_pdf, output_dir)
+        if not DRY_RUN and i < len(pdf_files) - 1:
+            print()
 
     if DRY_RUN:
         print("\n📢 --- 侦察结束 ---")
