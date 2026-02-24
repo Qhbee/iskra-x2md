@@ -29,7 +29,7 @@
 - 🔄 Z-library 的 pdf，同中马库，但是多了书签
 - ⬜ 中马库 [列宁全集（中文第二版-文字版PDF）](https://www.marxists.org/chinese/pdf/lenin-old.htm)，从文字版 PDF 解析，但是缺少第54-第60卷，以及《列宁全集补遗》
 - ⬜ 中马库 [列宁全集（中文第二版-图像版PDF）](https://www.marxists.org/chinese/pdf/lenin.htm)，以后 OCR 第54-第60卷
-- ⬜ 中马库 [列宁全集（版本II-2017年增订版-图像版PDF）](https://www.marxists.org/chinese/pdf/lenin-2017.htm)，有书签，需要 OCR
+- ⬜ 中马库 [列宁全集（版本II-2017年增订版-图像版PDF）](https://www.marxists.org/chinese/pdf/lenin-2017.htm)，有书签，需要 OCR，第一卷末尾有《列宁全集》第二版增订版新增文献一览表，还可以补充“人名索引”和“文献索引”
 - ⬜ 列宁全集补遗两卷，属于第一版，但只找到第一卷，没有第二卷
 
 ### 斯大林
