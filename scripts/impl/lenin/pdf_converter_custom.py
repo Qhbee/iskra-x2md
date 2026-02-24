@@ -141,6 +141,8 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
     # 路径栈和标题栈
     path_stack = {0: output_dir}
     title_stack = {}
+    # 每个父目录下文章的序号（用于 01. 02. 前缀）
+    article_idx_per_parent = {}
 
     # 初始化自定义解析器
     # 传入输出目录
@@ -211,7 +213,11 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         elif is_file:
             parent = path_stack.get(lvl - 1, output_dir)
-            article_dir = parent / clean_filename(title)
+            # 同一父目录下按 toc 顺序加 01. 02. 前缀
+            key = str(parent)
+            article_idx_per_parent[key] = article_idx_per_parent.get(key, 0) + 1
+            idx = article_idx_per_parent[key]
+            article_dir = parent / f"{idx:02d}. {clean_filename(title)}"
             file_path = article_dir / "index.md"
 
             # 确保文章目录和父目录存在 (防止跳级情况)
