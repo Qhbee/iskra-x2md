@@ -235,7 +235,7 @@ def main():
                 if not pages_to_process: continue
 
                 # 调用 parse_chapter_pages
-                md_content = parser.parse_chapter_pages(doc, pages_to_process, article_output_dir=article_dir)
+                md_content = parser.parse_chapter_pages(doc, pages_to_process, article_dir, title)
 
                 final_content = "---\n" + yaml.dump(front_matter, allow_unicode=True) + "---\n\n" + md_content
 

@@ -25,6 +25,8 @@ INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（�
 INDENT_2_THRESHOLD = 120  # 双缩进阈值：黑体且X坐标大于此值 → 引用；单缩进黑体仅当上一行为引用续行时 → 引用
 CENTER_THRESHOLD = 150   # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
+NOTE_CHAPTER_ENTRY_LEFT_X0 = 95   # 中国编者注释章节条目标记：行首全角数字 (１２３...) 且 x0 < 此值 → 新注释条目
+NOTE_CHAPTER_INDENT_THRESHOLD = 110  # 中国编者注释章节缩进阈值：x0 > 此值 → 注释续行（新段，加 2 格缩进）
 DOT_CHAR = "\u00B7"    # 字下加点 / 人名间隔符
 DOT_BELOW_THRESHOLD = 4  # · 的 y0 比前字大超过此值 → 字下加点（人名· 同基线则小）
 
@@ -525,12 +527,13 @@ class LeninParser:
             else:
                 self.current_para = clean_line
 
-    def parse_chapter_pages(self, doc, page_indices, article_output_dir):
+    def parse_chapter_pages(self, doc, page_indices, article_output_dir, article_title=None):
         """
         [主入口] 解析指定章节的页面列表(跨页流式处理)
         :param doc: PyMuPDF Document
         :param page_indices: 这一章包含的页码列表 (0-based)
         :param article_output_dir: 本篇文章的输出目录，图片保存在其 assets 子目录
+        :param article_title: 文章标题，用于启用章节专用规则（如「注释」中的全角数字段落分段）
         """
         # 设置本篇文章的 assets 目录
         self.assets_dir = article_output_dir / "assets"
@@ -611,8 +614,9 @@ class LeninParser:
                 # 智能分段判断（last_line_prefix 为上一行的 prefix，用于标题续行判定）
                 is_new = False
 
-                # [判定 1] 物理缩进 -> 新段落
-                if line["bbox"][0] > INDENT_THRESHOLD:
+                # [判定 1] 物理缩进 -> 新段落（注释章节用 NOTE_CHAPTER_INDENT_THRESHOLD）
+                indent_th = NOTE_CHAPTER_INDENT_THRESHOLD if article_title == "注释" else INDENT_THRESHOLD
+                if line["bbox"][0] > indent_th:
                     is_new = True
                 # [判定 2] 空格缩进 (全角/半角) -> 新段落
                 # 原来用 dict     每个 span 里是 "text": "Some text"
@@ -620,6 +624,13 @@ class LeninParser:
                 raw_text = "".join("".join(c["c"] for c in s["chars"]) for s in line["spans"])
                 if raw_text.startswith("　") or raw_text.startswith("  "):
                     is_new = True
+
+                # [判定 2.5] 注释章节专用：行首全角数字（１、２、１０...）且 x0 靠左 → 新注释条目
+                is_comment_note_start = False
+                if article_title == "注释" and line["bbox"][0] < NOTE_CHAPTER_ENTRY_LEFT_X0:
+                    if re.match(r"^\s*[\uFF10-\uFF19]+", raw_text):
+                        is_new = True
+                        is_comment_note_start = True
 
                 # [判定 3] 标题强制换段（但连续多行同标题视为续行，合并为一行）
                 if prefix.startswith("#"):
@@ -642,6 +653,17 @@ class LeninParser:
                 # 允许注脚符号后跟文字 (如 "[^1]。内容") 紧接上一行
                 if re.match(r'^\s*\[\^\d+\]', clean_line):
                     is_new = False
+
+                # 注释章节：列表格式 -Ｎ + 内容缩进 2 格（标题如 # 注释 不缩进）
+                if article_title == "注释":
+                    if is_comment_note_start:
+                        m = re.match(r"^([\uFF10-\uFF19]+)\s*(.*)", clean_line)
+                        if m:
+                            num, rest = m.group(1), m.group(2)
+                            clean_line = f"- {num}\n\n  {rest}" if rest.strip() else f"- {num}"
+                    elif is_new and not is_comment_note_start and not clean_line.lstrip().startswith("#"):
+                        # 注释续行（缩进触发的新段）：前加 2 空格
+                        clean_line = "  " + clean_line
 
                 self.append_to_buffer(clean_line, is_new)
                 last_line_prefix = prefix
