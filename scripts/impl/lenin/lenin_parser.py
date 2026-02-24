@@ -32,6 +32,82 @@ DOT_CHAR = "\u00B7"    # 字下加点 / 人名间隔符
 DOT_BELOW_THRESHOLD = 4  # · 的 y0 比前字大超过此值 → 字下加点（人名· 同基线则小）
 
 
+def normalize_title(text: str) -> str:
+    """
+    标题规范化：
+    0. 括号清理：去除全/半角括号内侧两端的空格
+    0.1 序号吸附：将数字与标点之间的异常空格消除（如 １ ． → １．）
+    1. 纯数字合并：去除阿拉伯/汉字数字内部打断的空格（如 1 893 → 1893，统 一 → 统一）
+    2. 层级合并：去除数字与单位间的空格（如 第 1 章 → 第一章）
+    3. 严格位置约束：仅当合法标识（第一章、1.2）处于文本最开头时保留空格，否则一律合并
+    """
+    if not text or not text.strip():
+        return text
+
+    # [预处理阶段]
+    s = text.replace("　", " ").strip()
+    s = re.sub(r"\s+", " ", s)
+
+    # [规则 0] 括号内部空格消除
+    s = re.sub(r"([\(（])\s+", r"\1", s)
+    s = re.sub(r"\s+([\)）])", r"\1", s)
+
+    # [规则 0.1] 序号标点吸附：修复 "１ ．" 这种异常断开的情况
+    s = re.sub(r"(?<=[0-9\uFF10-\uFF19一二三四五六七八九十百零千万])\s+([．、\.])", r"\1", s)
+
+    # # [规则 0.2] 首位强制隔离
+    # 针对阿拉伯/全角数字：支持 1, 1.2, 1.2.3 等多级格式
+    # 逻辑：匹配开头所有的数字和中间的圆点，如果紧跟的字符不是数字、圆点、空格或特定单位，则在中间插入空格
+    s = re.sub(r"^([0-9\uFF10-\uFF19]+(?:[\.\．][0-9\uFF10-\uFF19]+)*)([^0-9\uFF10-\uFF19\.\．\s、年月日届编章节卷部分回条个])",r"\1 \2", s)
+
+    # 针对汉字数字：匹配开头的汉字数字
+    # 逻辑：如果紧跟的字符不是汉字数字、顿号/句号、空格或特定单位，则插入空格
+    s = re.sub(r"^([一二三四五六七八九十百零千万]+)([^一二三四五六七八九十百零千万\.\．\s、年月日届编章节卷部分回条个])", r"\1 \2", s)
+
+    # [规则 1.1] 纯阿拉伯数字之间的空格消除
+    s = re.sub(r"(?<=[0-9\uFF10-\uFF19])\s+(?=[0-9\uFF10-\uFF19])", "", s)
+
+    # [规则 1.2] 汉字数字之间的空格消除
+    s = re.sub(r"(?<=[第一二三四五六七八九十百零千万])\s+(?=[一二三四五六七八九十百零千万])", "", s)
+
+    # [规则 2] 层级/单位合并
+    s = re.sub(r"(第?)\s*([一二三四五六七八九十百零千万\d]+)\s*(年|月|日|届|编|章|节|卷|部分|回|条)", r"\1\2\3", s)
+
+    # [辅助判定：是否为严格意义上的层级标识]
+    def _keep_space_after(t: str) -> bool:
+        # 1. 结构化的层级标识，如 第一章, 第2节
+        if re.match(r"^第[一二三四五六七八九十百零千万\d]+(编|章|节|卷|部分|回|条)$", t):
+            return True
+
+        # 2. 阿拉伯数字多级序号 (如 1.2, 1.2.3) 或 单个数字 (如 1)
+        # 注意：不包含结尾标点。如果是 "1."，这里会返回 False，从而与后面的文本无缝拼接
+        if re.match(r"^[0-9]+(?:\.[0-9]+)*$", t) or re.match(r"^[\uFF10-\uFF19]+(?:．[\uFF10-\uFF19]+)*$", t):
+            return True
+
+        # 3. [恢复规则] 纯汉字数字序号 (如 "一", "十二")
+        # 注意：这里严格排除了 "、" 和 "．"。如果是 "一、"，返回 False，实现无缝拼接 "一、文本"
+        # 如果是纯 "一"，返回 True，配合主循环的 i == 0，实现保留空格 "一 文本"
+        if re.match(r"^[一二三四五六七八九十百零千万]+$", t):
+            return True
+
+        return False
+
+    # [切分与重组阶段]
+    parts = s.split(" ")
+    out = []
+    for i, p in enumerate(parts):
+        if not p:
+            continue
+        out.append(p)
+
+        # 核心修复：增加 i == 0 的绝对位置约束。
+        # 只有当该词块位于标题最开头，且符合保留规则时，才输出空格。句中的任何碎片全部无缝拼接。
+        if i + 1 < len(parts) and i == 0 and _keep_space_after(p):
+            out.append(" ")
+
+    return "".join(out).strip()
+
+
 # ================= ⚙️ 解析引擎 =================
 # Page（页） -> Block（块） -> Line（行） -> Span（相同样式片段） -> Char（字符）
 
@@ -427,23 +503,10 @@ class LeninParser:
         formatted_text = formatted_text.strip()  # 在这里统一进行整体去空
 
         if line_prefix.strip().startswith("#"):
-            # [核心修复] 标题智能去空
-            # 目标：保留序号后的空格 (如 "一 几点说明")，删除排版用的空格 (如 "编 辑 部")
+            # [核心修复] 标题智能去空：与书签/目录一致，用 normalize_title
             prefix_len = len(line_prefix)
             content = formatted_text[prefix_len:]
-            content_norm = content.replace("　", " ") # 归一化全角空格
-            # 正则匹配：数字/中文序号 + 空格 + 内容
-            match_num = re.match(r'^([0-9\.]+|[一二三四五六七八九十百]+[、\.]?)\s+(.*)', content_norm)
-
-            if match_num:
-                # 命中序号结构 -> 保留一个标准空格
-                num_part = match_num.group(1)
-                text_part = match_num.group(2).replace(" ", "")
-                content = f"{num_part} {text_part}"
-            else:
-                # 未命中 -> 暴力清理所有空格
-                content = content.replace(" ", "").replace("　", "")
-
+            content = normalize_title(content)
             formatted_text = line_prefix + content
 
         elif line_prefix.strip().startswith(">"):

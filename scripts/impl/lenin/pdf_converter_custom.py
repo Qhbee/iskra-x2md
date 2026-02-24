@@ -5,6 +5,7 @@ from pathlib import Path
 
 # 导入我们的自定义解析器，而非官方的 pymupdf4llm
 from lenin_parser import LeninParser
+from lenin_parser import normalize_title
 
 # ==================== 📜 解析规则 ====================
 
@@ -151,7 +152,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
     # 遍历书签
     for item in toc:
         lvl = item['level']
-        title = item['title']
+        title = normalize_title(item['title'])
         start = item['start']
         end = item['end']
         has_children = item['has_children']
