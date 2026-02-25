@@ -21,9 +21,9 @@ DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测
 INDENT_THRESHOLD = 75   # 缩进阈值：X坐标大于此值视为新段落，小于此值视为续行
 CENTER_THRESHOLD = 120  # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 
-# 注脚分隔线：须同时满足 8+ 破折号 且 字号约 14（正文 16 号破折号不是分隔线）
-SEPARATOR_FONT_SIZE_MIN = 13.5
-SEPARATOR_FONT_SIZE_MAX = 14.5
+# 注脚分隔线：须同时满足 8+ 破折号 且 字号约 14（也有极少 12 ，正文 16 号破折号不是分隔线）
+SEPARATOR_FONT_SIZE_MIN = 11.0   # 排除极小字号噪音
+SEPARATOR_FONT_SIZE_MAX = 15.0   # ≤15 为分界线，>15（如16）为正文内分隔
 
 
 # ================= ⚙️ 解析引擎 =================
@@ -66,11 +66,17 @@ class StalinParser:
         """
         判断是否为注脚分隔线：须同时满足 8+ 破折号 且 字号约 14。
         仅用于 get_split_y 计算正文/注脚分界线，正文 16 号不算。
+        【关键】排除纯空白 span 的字号，避免被 16pt 空格干扰（如 "  ———————— " 中首尾空格为 16pt）。
         """
         raw_text = "".join(s.get("text", "") for s in line.get("spans", []))
         if not re.search(r'[—_]{8,}', raw_text.strip()):
             return False
-        sizes = [s.get("size") or 0 for s in line.get("spans", []) if s.get("size")]
+        # 只取含非空白内容的 span 的字号，忽略纯空格 span（如首尾 16pt 空格）
+        sizes = [
+            s.get("size") or 0
+            for s in line.get("spans", [])
+            if s.get("size") and (s.get("text", "") or "").strip()
+        ]
         if not sizes:
             return False
         max_size = max(sizes)
