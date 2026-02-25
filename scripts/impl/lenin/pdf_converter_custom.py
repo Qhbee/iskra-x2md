@@ -27,7 +27,24 @@ OUTPUT_BASE = PROJECT_ROOT / "data/processed/lenin/列宁全集（版本II-文�
 DRY_RUN = False
 
 # 3. 切分层级
-SPLIT_LEVEL = 1
+DEFAULT_SPLIT_LEVEL = 1 # 默认用 1 级
+LETTER_SPLIT_LEVEL = 2  # 书信类 PDF 用 2 级
+
+
+def get_split_level(pdf_name: str) -> int:
+    """
+    按 PDF 名称决定切分层级。
+    书信类（44-53卷 或 含「书信」）用 2 级，其余用 1 级。
+    """
+    name = Path(pdf_name).stem
+    if "书信" in name:
+        return LETTER_SPLIT_LEVEL
+    m = re.search(r"第?(\d+)卷", name)
+    if m:
+        vol = int(m.group(1))
+        if 44 <= vol <= 53:
+            return LETTER_SPLIT_LEVEL
+    return DEFAULT_SPLIT_LEVEL
 
 # 4. 黑名单
 BLACKLIST = ["目录"]
@@ -47,7 +64,7 @@ def clean_filename(text):
     return re.sub(r'[\\/:*?"<>|]', '_', text).strip()
 
 
-def extract_toc_structure(doc):
+def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL):
     """
     提取书签，并计算页码范围
     核心逻辑：先保留黑名单条目用于计算页码边界，算完后再过滤。
@@ -85,7 +102,7 @@ def extract_toc_structure(doc):
             "is_blacklisted": is_blacklisted,  # 关键标记
             "has_children": False,   # 默认为 False，稍后计算
             "force_md": force_md,
-            "effective_level": SPLIT_LEVEL if force_md else lvl,  # 强制 md 视为 SPLIT_LEVEL 层级
+            "effective_level": split_level if force_md else lvl,  # 强制 md 视为 split_level 层级
         })
 
     # --- 第二步：计算 has_children ---
@@ -129,14 +146,15 @@ def extract_toc_structure(doc):
 
 def process_one_pdf(input_pdf: Path, output_dir: Path):
     """处理单个 PDF 的转换逻辑"""
-    print(f"📖 读取: {input_pdf.name}")
+    split_level = get_split_level(input_pdf.name)
+    print(f"📖 读取: {input_pdf.name} [切分层级: {split_level}]")
     try:
         doc = fitz.open(input_pdf)
     except Exception as e:
         print(f"❌ 无法打开 {input_pdf.name}: {e}")
         return
 
-    toc = extract_toc_structure(doc)
+    toc = extract_toc_structure(doc, split_level)
     print(f"🔍 有效书签: {len(toc)} 个\n")
 
     # 路径栈和标题栈
@@ -173,17 +191,17 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         # 判定 1: 这是一个文件吗？
         # 条件 X: 强制 md 级
-        # 条件 A: 刚好到达切分层级 (L5)
-        # 条件 B: 还没到层级 (L3, L4)，但是它没有子节点了 (光杆司令，如"口号")
-        is_file = force_md or (lvl == SPLIT_LEVEL) or (lvl < SPLIT_LEVEL and not has_children)
+        # 条件 A: 刚好到达切分层级
+        # 条件 B: 还没到层级，但是它没有子节点了 (光杆司令，如"口号")
+        is_file = force_md or (lvl == split_level) or (lvl < split_level and not has_children)
 
         # 判定 2: 这是一个文件夹吗？
         # 条件: 非强制 md，还没到层级，且有子节点 (容器，如"正文")
-        is_folder = not force_md and (lvl < SPLIT_LEVEL and has_children)
+        is_folder = not force_md and (lvl < split_level and has_children)
 
         # 判定 3: 它是文件里的标题吗？
-        # 条件: 非强制 md，且超过了层级 (L6+)
-        is_content = not force_md and (lvl > SPLIT_LEVEL)
+        # 条件: 非强制 md，且超过了层级
+        is_content = not force_md and (lvl > split_level)
 
         # ========== 🚧 执行动作 ==========
 
