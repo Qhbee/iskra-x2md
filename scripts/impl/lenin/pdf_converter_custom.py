@@ -222,7 +222,11 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         if is_folder:
             safe_name = clean_filename(title)
             parent = path_stack.get(lvl - 1, output_dir)
-            current_path = parent / safe_name
+            # 同一父目录下按 toc 顺序加 01. 02. 前缀（与文件共用计数）
+            key = str(parent)
+            article_idx_per_parent[key] = article_idx_per_parent.get(key, 0) + 1
+            idx = article_idx_per_parent[key]
+            current_path = parent / f"{idx:02d}. {safe_name}"
 
             if not current_path.exists():
                 current_path.mkdir(parents=True, exist_ok=True)
