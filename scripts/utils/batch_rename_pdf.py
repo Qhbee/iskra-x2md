@@ -8,8 +8,11 @@
 示例：
     马克思恩格斯全集第二版 文字版 带书签 1上 (马克思恩格斯) (z-library.sk, 1lib.sk, z-lib.sk).pdf
     ➡️ 马克思恩格斯全集 1上.pdf
+
+注意：USE_GIT_MV = True 时使用 git mv 重命名，确保 Git 正确识别变更（Windows 下 Path.rename 可能不被 git 感知）。
 """
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -23,6 +26,25 @@ TARGET_DIR = PROJECT_ROOT / "data" / "raw" / "marx-engels"
 
 # 是否实际执行（True=执行重命名，False=仅侦察）
 EXECUTE = False
+
+# 使用 git mv 重命名（确保 Git 正确识别变更，避免 Windows 下 Path.rename 后 git 无反应）
+USE_GIT_MV = True
+
+
+def do_rename(old_path: Path, new_path: Path) -> None:
+    """执行重命名，优先使用 git mv 以让 Git 正确识别"""
+    if USE_GIT_MV and (PROJECT_ROOT / ".git").exists():
+        try:
+            subprocess.run(
+                ["git", "mv", str(old_path), str(new_path)],
+                cwd=PROJECT_ROOT,
+                check=True,
+                capture_output=True,
+            )
+            return
+        except subprocess.CalledProcessError:
+            pass
+    old_path.rename(new_path)
 
 
 def clean_marx_engels_name(old: str) -> str | None:
@@ -69,7 +91,7 @@ def main():
                     print(f"⚠️️️  跳过（目标已存在）: {f.name} ➡️ {new_name}")
                     skipped.append(f.name)
                     continue
-                f.rename(new_path)
+                do_rename(f, new_path)
                 print(f"✅ {f.name}")
                 print(f"➡️ {new_name}\n")
                 renamed += 1
