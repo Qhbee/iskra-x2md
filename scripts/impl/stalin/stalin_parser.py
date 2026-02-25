@@ -21,6 +21,10 @@ DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测
 INDENT_THRESHOLD = 75   # 缩进阈值：X坐标大于此值视为新段落，小于此值视为续行
 CENTER_THRESHOLD = 120  # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 
+# 注脚分隔线：须同时满足 8+ 破折号 且 字号约 14（正文 16 号破折号不是分隔线）
+SEPARATOR_FONT_SIZE_MIN = 13.5
+SEPARATOR_FONT_SIZE_MAX = 14.5
+
 
 # ================= ⚙️ 解析引擎 =================
 # Page（页） -> Block（块） -> Line（行） -> Span（相同样式片段） -> Char（字符）
@@ -58,23 +62,64 @@ class StalinParser:
         text = re.sub(r'\[\s*转\s*下\s*页\s*\]', '', text)
         return text
 
+    def is_footnote_separator_line(self, line):
+        """
+        判断是否为注脚分隔线：须同时满足 8+ 破折号 且 字号约 14。
+        仅用于 get_split_y 计算正文/注脚分界线，正文 16 号不算。
+        """
+        raw_text = "".join(s.get("text", "") for s in line.get("spans", []))
+        if not re.search(r'[—_]{8,}', raw_text.strip()):
+            return False
+        sizes = [s.get("size") or 0 for s in line.get("spans", []) if s.get("size")]
+        if not sizes:
+            return False
+        max_size = max(sizes)
+        return SEPARATOR_FONT_SIZE_MIN <= max_size <= SEPARATOR_FONT_SIZE_MAX
+
+    def is_dash_only_line(self, text):
+        """纯破折号行（8+ 个 — 或 _，无其他字符）"""
+        s = text.strip()
+        if not re.search(r'[—_]{8,}', s):
+            return False
+        return re.sub(r'[—_\s]', '', s) == ''
+
     def get_split_y(self, page):
         """
         计算正文和注脚的分割线 (Split Line) Y坐标
         逻辑：
-        1. 优先找实线分隔符，连续破折号 block
+        1. 优先找实线分隔符，连续破折号 block（须 8+ 破折号且字号约 14）
         2. 其次找 '接上页' 这种全页注脚标记
         """
         blocks = page.get_text("blocks")
+        # 扁平元组列表，每个 b 的结构：(x0, y0, x1, y1, text, block_no, block_type)
+        # b[0], b[1], b[2], b[3]  # bbox 坐标
+        # b[4]  # 该 block 的完整文本（字符串）
+        # b[5]  # block 编号
+        # b[6]  # 类型（0=文本, 1=图片）
+        data = page.get_text("dict")
+        # 嵌套字典结构
+        # block = {
+        #     "bbox": [x0, y0, x1, y1],
+        #     "lines": [
+        #         {
+        #             "bbox": [...],
+        #             "spans": [
+        #                 {"text": "...", "font": "SimSun", "size": 14.0, "color": 0, "flags": 4}
+        #             ]
+        #         }
+        #     ]
+        # }
+        # 若是图片 block，还会有 "image" 键
         page_height = page.rect.height
 
-        # 1. 扫描视觉分割线
-        for b in blocks:
-            text = b[4].strip()
-            y0 = b[1]
-            # 特征匹配
-            if y0 > MARGIN_TOP_CUT:
-                if re.search(r'[—_]{8,}', text): # 匹配连续8个以上的长横线或下划线
+        # 1. 扫描视觉分割线（需检查字号，正文 16 号破折号不是分隔线）
+        for block in data["blocks"]:
+            if "lines" not in block:
+                continue
+            for line in block["lines"]:
+                y0 = line["bbox"][1]
+                # 特征匹配
+                if y0 > MARGIN_TOP_CUT and self.is_footnote_separator_line(line):
                     return y0 - 2   # 稍微往上提一点作为分界线
 
         # 2. 扫描全页注脚标记
@@ -405,8 +450,13 @@ class StalinParser:
 
                 if not clean_line:
                     continue
-                if re.search(r'[—_]{8,}', clean_line):
+                # 14pt 是正文/注脚分割线，不会出现在 body（在 split_y 以下）
+                if self.is_footnote_separator_line(line):
                     continue # 跳过分割线
+                # 16pt 是正文内分隔线，转为 ---
+                if self.is_dash_only_line(clean_line):
+                    self.append_to_buffer("---", is_new_para=True)
+                    continue
 
                 # 智能分段判断
                 is_new = False
@@ -447,7 +497,8 @@ class StalinParser:
                 clean_line = self.clean_text(raw_text).strip()
                 if not clean_line:
                     continue
-                if re.search(r'[—_]{8,}', clean_line):
+                # 14pt 是正文/注脚分界线，跳过（不输出）
+                if self.is_footnote_separator_line(line):
                     continue
 
                 # 检测注脚开头是否有符号：① 或 [^1]
