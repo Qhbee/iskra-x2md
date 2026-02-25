@@ -111,7 +111,7 @@ def normalize_title(text: str) -> str:
 # ================= ⚙️ 解析引擎 =================
 # Page（页） -> Block（块） -> Line（行） -> Span（相同样式片段） -> Char（字符）
 
-class LeninParser:
+class MarxEngelsParser:
     def __init__(self, output_base_dir):
         """
         初始化解析器

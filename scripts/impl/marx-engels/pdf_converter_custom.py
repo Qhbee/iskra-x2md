@@ -4,8 +4,8 @@ import yaml
 from pathlib import Path
 
 # 导入我们的自定义解析器，而非官方的 pymupdf4llm
-from lenin_parser import LeninParser
-from lenin_parser import normalize_title
+from marx_engels_parser import MarxEngelsParser
+from marx_engels_parser import normalize_title
 
 # ==================== 📜 解析规则 ====================
 
@@ -165,7 +165,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
     # 初始化自定义解析器
     # 传入输出目录
-    parser = LeninParser(output_dir)
+    parser = MarxEngelsParser(output_dir)
 
     # 遍历书签
     for item in toc:
@@ -256,7 +256,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
             print(f"{indent}🚀 转换“文章包” 📦 : {title} ({start + 1}-{end + 1})...")
 
             try:
-                # === 关键：传入页码列表，使用 LeninParser 一次性处理整节，而非逐页解析 ===
+                # === 关键：传入页码列表，使用 MarxEngelsParser 一次性处理整节，而非逐页解析 ===
                 pages_to_process = list(range(start, end + 1))
                 if not pages_to_process: continue
 
