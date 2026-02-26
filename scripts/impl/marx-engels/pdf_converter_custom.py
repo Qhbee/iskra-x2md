@@ -1,7 +1,13 @@
 import fitz
 import re
+import sys
 import yaml
 from pathlib import Path
+
+# Windows 控制台 UTF-8 输出，避免 UnicodeEncodeError
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 # 导入我们的自定义解析器，而非官方的 pymupdf4llm
 from marx_engels_parser import MarxEngelsParser
@@ -59,9 +65,14 @@ FORCE_MD_TITLES = ["前言", "注释", "人名索引", "文献索引", "年表"]
 
 # ==================== ⚙️ 智能引擎：转换逻辑 ====================
 
+def sanitize_surrogates(text: str) -> str:
+    """移除 PDF 书签中可能出现的 surrogate 等不可见字符，避免 UnicodeEncodeError"""
+    return "".join(c for c in text if not ("\ud800" <= c <= "\udfff"))
+
+
 def clean_filename(text):
     """文件名清洗，去特殊字符"""
-    return re.sub(r'[\\/:*?"<>|]', '_', text).strip()
+    return re.sub(r'[\\/:*?"<>|]', '_', sanitize_surrogates(text)).strip()
 
 
 def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL):
@@ -78,7 +89,7 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL):
 
     # 1. 标记黑名单
     for item in toc:
-        lvl, title, page = item[0], item[1], item[2]
+        lvl, title, page = item[0], sanitize_surrogates(item[1]), item[2]
         is_blacklisted = False
 
         # 1. 递归黑名单逻辑 (如果父级是黑名单，子级也是)
