@@ -18,8 +18,8 @@ from marx_engels_parser import normalize_title
 
 # 1. 路径配置 (定位到项目根目录)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-INPUT_DIR = PROJECT_ROOT / "data/raw/lenin/列宁全集（版本II-文字版）（完整书签版）"
-OUTPUT_BASE = PROJECT_ROOT / "data/processed/lenin/列宁全集（版本II-文字版）（完整书签版）"
+INPUT_DIR = PROJECT_ROOT / "data/raw/marx-engels/马克思恩格斯全集-文字版-带书签"
+OUTPUT_BASE = PROJECT_ROOT / "data/processed/marx-engels/马克思恩格斯全集-文字版-带书签"
 
 # 2. 安全模式
 # True = 侦察模式 (只看目录结构)
