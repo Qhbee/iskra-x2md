@@ -68,11 +68,14 @@ BLACKLIST = ["目录", "插图"]
 #    因此一般只把书签最后几个层级错误的项加入本列表。
 FORCE_MD_TITLES = ["前言", "注释", "人名索引", "期刊索引", "地名索引", "著作索引", "文献索引", "译后记", "年表"]
 
-# TODO: 包含“年表”和“索引”就行？
-# 卡·马克思生平事业年表
-# 弗·恩格斯生平事业年表
-# 卡·马克思和弗·恩格斯生平事业年表
-# 度量衡和货币名称表
+def _is_force_md_title(title: str) -> bool:
+    """强制 md：精确匹配 FORCE_MD_TITLES，或标题含「年表」或以「索引」结尾"""
+    t = title.strip()
+    if t in FORCE_MD_TITLES:
+        return True
+    if "年表" in title or title.endswith("索引"):
+        return True
+    return False
 
 # TODO: 强制目录等级（一定是强制 md 优先级更高）
 # 卡·马克思和弗·恩格斯的遗稿
@@ -120,7 +123,7 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL):
             is_blacklisted = True
             skipping_level = lvl
 
-        force_md = bool(FORCE_MD_TITLES and title.strip() in FORCE_MD_TITLES)
+        force_md = _is_force_md_title(title)
         full_list.append({
             "level": lvl,
             "title": title.strip(),
