@@ -22,7 +22,7 @@ if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-TARGET_DIR = PROJECT_ROOT / "data/raw/marx-engels/马恩全集-文字版-带书签"
+TARGET_DIR = PROJECT_ROOT / "data/raw/marx-engels/马克思恩格斯全集-文字版-带书签"
 
 # 是否实际执行（True=执行重命名，False=仅侦察）
 EXECUTE = False
