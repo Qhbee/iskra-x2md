@@ -238,7 +238,8 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         force_md = item.get("force_md", False)  # 已在 extract_toc_structure 中计算
 
         # 判定 0.5: 强制目录级（优先级低于 force_md）
-        force_folder = not force_md and _is_force_folder_title(title)
+        # 仅在 lvl<=split_level 时生效，否则「附录」等作为文章内章节应保持 🔹，不提升
+        force_folder = not force_md and _is_force_folder_title(title) and (lvl <= split_level)
 
         # 判定 1: 这是一个文件吗？
         # 条件 X: 强制 md 级
