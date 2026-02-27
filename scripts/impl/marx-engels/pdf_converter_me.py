@@ -77,9 +77,15 @@ def _is_force_md_title(title: str) -> bool:
         return True
     return False
 
-# TODO: 强制目录等级（一定是强制 md 优先级更高）
-# 卡·马克思和弗·恩格斯的遗稿
-# 附录、遗稿、补遗 一定是目录
+# 6. 强制目录级：以下标题无论书签层级如何，一律视为文件夹（优先级低于 force_md）
+# 强制目录本身：一律为 📂。
+# 强制目录的直接子项：一律提升为 📄，无论层数多少。
+# 更深层的：保持 🔹，不会继续向上提升。
+FORCE_FOLDER_TITLES = [
+    "卡·马克思和弗·恩格斯的遗稿",
+    "卡·马克思的遗稿", "弗·恩格斯的遗稿",
+    "附录", "遗稿", "补遗"
+]
 # 青年马克思的文学和诗歌习作
 
 # ==================== ⚙️ 智能引擎：转换逻辑 ====================
@@ -190,6 +196,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
     # 路径栈和标题栈
     path_stack = {0: output_dir}
     title_stack = {}
+    force_folder_levels = set()  # 记录哪些层级是强制目录，用于子项提升
     # 每个父目录下文章的序号（用于 01. 02. 前缀）
     article_idx_per_parent = {}
 
@@ -207,9 +214,10 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         # 维护父级标题栈 (用于 Category)
         title_stack[lvl] = title
-        # 清除更深层的旧标题
+        # 清除更深层的旧标题和强制目录记录
         for k in list(title_stack.keys()):
             if k > lvl: del title_stack[k]
+        force_folder_levels = {k for k in force_folder_levels if k <= lvl}
 
         # force_md 用 effective_level 控制缩进，与父级同级显示
         indent = "  " * (item.get("effective_level", lvl) - 1)
@@ -219,19 +227,38 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         # 判定 0: 强制 md 级（书签层级错误时覆盖）
         force_md = item.get("force_md", False)  # 已在 extract_toc_structure 中计算
 
+        # 判定 0.5: 强制目录级（优先级低于 force_md，严格匹配 FORCE_FOLDER_TITLES）
+        force_folder = not force_md and title.strip() in FORCE_FOLDER_TITLES
+
         # 判定 1: 这是一个文件吗？
         # 条件 X: 强制 md 级
         # 条件 A: 刚好到达切分层级
         # 条件 B: 还没到层级，但是它没有子节点了 (光杆司令，如"口号")
         is_file = force_md or (lvl == split_level) or (lvl < split_level and not has_children)
+        if force_folder:
+            is_file = False
 
         # 判定 2: 这是一个文件夹吗？
-        # 条件: 非强制 md，还没到层级，且有子节点 (容器，如"正文")
-        is_folder = not force_md and (lvl < split_level and has_children)
+        # 条件: 非强制 md，还没到层级，且有子节点 (容器，如"正文")；或强制目录级
+        is_folder = force_folder or (not force_md and (lvl < split_level and has_children))
 
         # 判定 3: 它是文件里的标题吗？
         # 条件: 非强制 md，且超过了层级
         is_content = not force_md and (lvl > split_level)
+
+        # 提升逻辑：仅当「直接父级」是强制目录时，才将 🔹 提升为 📄
+        # 否则会递归提升：小册子...（暴力在历史中的子级）被错误提升
+        parent_levels = [k for k in title_stack.keys() if k < lvl]
+        direct_parent_lvl = max(parent_levels) if parent_levels else None
+        is_direct_child_of_force_folder = direct_parent_lvl is not None and direct_parent_lvl in force_folder_levels
+        if is_content and is_direct_child_of_force_folder:
+            is_content = False
+            is_file = True  # 只提升一层，一律为 📄；子级保持 🔹
+
+        # 关键：只要标题是强制目录，无论 DRY_RUN 与否，都必须更新 force_folder_levels，
+        # 否则后续子项的 inside_force_folder 判断会失败
+        if is_folder and title.strip() in FORCE_FOLDER_TITLES:
+            force_folder_levels.add(lvl)
 
         # ========== 🚧 执行动作 ==========
 
@@ -262,6 +289,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
                 current_path.mkdir(parents=True, exist_ok=True)
 
             path_stack[lvl] = current_path
+            # force_folder_levels 已在上方统一更新
             print(f"{indent}📂 创建目录: {title}")
 
         elif is_file:
