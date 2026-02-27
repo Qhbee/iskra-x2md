@@ -32,30 +32,34 @@ OUTPUT_BASE = PROJECT_ROOT / "data/processed/marx-engels/马克思恩格斯全�
 # False = 执行模式 (生成最终 Markdown)
 DRY_RUN = False
 
-# 3. 切分层级 TODO
+# 3. 切分层级
 DEFAULT_SPLIT_LEVEL = 1 # 默认用 1 级
-LETTER_SPLIT_LEVEL = 2  # 书信类 PDF 用 2 级
-
-# 每个级别对应的卷
+# 每个级别对应的卷（按 base_vol 分组，该卷所有分册用同一层级）
 # 1: [2、3、4、7、8、9、10、11、12、13、14上、14下、15、16、17、18、19、21、22]
 # 2: [1上、1下、20、26Ⅰ、26Ⅱ、26Ⅲ、42、43、44、45、46上、46下、50]
 # 3: [5、6、23、24、25上、25下、31上、31下、32、33、34、35、36、37、38、39上、39下、47、48、49]
 # 4: [27、28上、28下、29、30上、30下、]
-# 特殊情况: [40、41]，里面有的2，有的3
+# 特殊情况: [40、41]，里面有的2，有的3，待实现
+_SPLIT_LEVEL_BY_VOL = {
+    1: [2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22],
+    2: [1, 20, 26, 42, 43, 44, 45, 46, 50],
+    3: [5, 6, 23, 24, 25, 31, 32, 33, 34, 35, 36, 37, 38, 39, 47, 48, 49],
+    4: [27, 28, 29, 30],
+}
+# 运行时展开为 vol -> level 映射
+VOLUME_SPLIT_LEVEL = {vol: level for level, vols in _SPLIT_LEVEL_BY_VOL.items() for vol in vols}
 
 def get_split_level(pdf_name: str) -> int:
-    """
-    按 PDF 名称决定切分层级。
-    书信类（44-53卷 或 含「书信」）用 2 级，其余用 1 级。
-    """
+    """按 PDF 名称中的卷号查切分层级，未匹配则默认 1"""
     name = Path(pdf_name).stem
-    if "书信" in name:
-        return LETTER_SPLIT_LEVEL
     m = re.search(r"第?(\d+)卷", name)
     if m:
         vol = int(m.group(1))
-        if 44 <= vol <= 53:
-            return LETTER_SPLIT_LEVEL
+        if vol in VOLUME_SPLIT_LEVEL:
+            return VOLUME_SPLIT_LEVEL[vol]
+            # 40、41 特殊：内部有 2 有 3，暂按 2 fallback
+        if vol in (40, 41):
+            return 2  # TODO: 精细区分
     return DEFAULT_SPLIT_LEVEL
 
 # 4. 黑名单
