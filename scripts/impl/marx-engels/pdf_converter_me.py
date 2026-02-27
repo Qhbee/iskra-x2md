@@ -86,6 +86,16 @@ FORCE_FOLDER_TITLES = [
     "卡·马克思的遗稿", "弗·恩格斯的遗稿",
     "附录", "遗稿", "补遗"
 ]
+
+def _is_force_folder_title(title: str) -> bool:
+    """强制目录：精确匹配 FORCE_FOLDER_TITLES，或以「遗稿」结尾"""
+    t = title.strip()
+    if t in FORCE_FOLDER_TITLES:
+        return True
+    if t.endswith("遗稿"):
+        return True
+    return False
+
 # 青年马克思的文学和诗歌习作
 
 # ==================== ⚙️ 智能引擎：转换逻辑 ====================
@@ -227,8 +237,8 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         # 判定 0: 强制 md 级（书签层级错误时覆盖）
         force_md = item.get("force_md", False)  # 已在 extract_toc_structure 中计算
 
-        # 判定 0.5: 强制目录级（优先级低于 force_md，严格匹配 FORCE_FOLDER_TITLES）
-        force_folder = not force_md and title.strip() in FORCE_FOLDER_TITLES
+        # 判定 0.5: 强制目录级（优先级低于 force_md）
+        force_folder = not force_md and _is_force_folder_title(title)
 
         # 判定 1: 这是一个文件吗？
         # 条件 X: 强制 md 级
@@ -257,7 +267,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         # 关键：只要标题是强制目录，无论 DRY_RUN 与否，都必须更新 force_folder_levels，
         # 否则后续子项的 inside_force_folder 判断会失败
-        if is_folder and title.strip() in FORCE_FOLDER_TITLES:
+        if is_folder and _is_force_folder_title(title):
             force_folder_levels.add(lvl)
 
         # ========== 🚧 执行动作 ==========
