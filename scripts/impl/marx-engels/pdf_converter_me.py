@@ -251,6 +251,10 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         # 判定 2: 这是一个文件夹吗？
         # 条件: 非强制 md，还没到层级，且有子节点 (容器，如"正文")；或强制目录级
         is_folder = force_folder or (not force_md and (lvl < split_level and has_children))
+        # 强制目录无子级时，即使是附录/遗稿也应为 📄，不能建空文件夹
+        if force_folder and not has_children:
+            is_folder = False
+            is_file = True
 
         # 判定 3: 它是文件里的标题吗？
         # 条件: 非强制 md，且超过了层级
