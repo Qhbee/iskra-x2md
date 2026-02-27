@@ -66,7 +66,7 @@ BLACKLIST = ["目录", "插图"]
 #    若 force_md 穿插在父级中间（如附录 100-600，注释 200-300，年表 400-500），
 #    边界计算会错误：父级只剩开头段，中间 force_md 会互相“吃掉”间隙。
 #    因此一般只把书签最后几个层级错误的项加入本列表。
-FORCE_MD_TITLES = ["前言", "注释", "人名索引", "期刊索引", "地名索引", "著作索引", "文献索引", "译后记", "年表"]
+FORCE_MD_TITLES = ["前言", "注释", "译后记", "年表"]
 
 def _is_force_md_title(title: str) -> bool:
     """强制 md：精确匹配 FORCE_MD_TITLES，或标题含「年表」或以「索引」结尾"""
@@ -81,11 +81,7 @@ def _is_force_md_title(title: str) -> bool:
 # 强制目录本身：一律为 📂。
 # 强制目录的直接子项：一律提升为 📄，无论层数多少。
 # 更深层的：保持 🔹，不会继续向上提升。
-FORCE_FOLDER_TITLES = [
-    "卡·马克思和弗·恩格斯的遗稿",
-    "卡·马克思的遗稿", "弗·恩格斯的遗稿",
-    "附录", "遗稿", "补遗"
-]
+FORCE_FOLDER_TITLES = ["附录", "补遗"]
 
 def _is_force_folder_title(title: str) -> bool:
     """强制目录：精确匹配 FORCE_FOLDER_TITLES，或以「遗稿」结尾"""
