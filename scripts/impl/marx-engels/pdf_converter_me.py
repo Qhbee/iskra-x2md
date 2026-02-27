@@ -73,7 +73,7 @@ def _is_force_md_title(title: str) -> bool:
     t = title.strip()
     if t in FORCE_MD_TITLES:
         return True
-    if "年表" in title or title.endswith("索引"):
+    if "年表" in t or t.endswith("索引"):
         return True
     return False
 
