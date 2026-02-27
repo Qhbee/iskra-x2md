@@ -49,17 +49,20 @@ _SPLIT_LEVEL_BY_VOL = {
 # 运行时展开为 vol -> level 映射
 VOLUME_SPLIT_LEVEL = {vol: level for level, vols in _SPLIT_LEVEL_BY_VOL.items() for vol in vols}
 
+# 40、41 卷特殊规则
+VOL40_PROMOTE_ROOT_TITLE = "青年马克思的文学和诗歌习作"
+VOL41_LOCAL_SPLIT_ROOT_TITLE = "弗·恩格斯书信"
+
 def get_split_level(pdf_name: str) -> int:
     """按 PDF 名称中的卷号查切分层级，未匹配则默认 1"""
-    name = Path(pdf_name).stem
-    m = re.search(r"第?(\d+)卷", name)
+    m = re.search(r"第?(\d+)卷", Path(pdf_name).stem)
     if m:
         vol = int(m.group(1))
         if vol in VOLUME_SPLIT_LEVEL:
             return VOLUME_SPLIT_LEVEL[vol]
-            # 40、41 特殊：内部有 2 有 3，暂按 2 fallback
+        # 40、41 外层统一按 2，内部再走局部特殊规则
         if vol in (40, 41):
-            return 2  # TODO: 精细区分
+            return 2
     return DEFAULT_SPLIT_LEVEL
 
 # 4. 黑名单
@@ -110,17 +113,28 @@ def clean_filename(text):
     return re.sub(r'[\\/:*?"<>|]', '_', sanitize_surrogates(text)).strip()
 
 
-def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL):
+def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name: str = ""):
     """
     提取书签，并计算页码范围
     核心逻辑：先保留黑名单条目用于计算页码边界，算完后再过滤。
     """
     toc = doc.get_toc()
     total_pages = doc.page_count
+    m = re.search(r"第?(\d+)卷", Path(pdf_name).stem)
+    vol = int(m.group(1)) if m else None
 
     # --- 第一步：构建全量列表 (标记黑名单，但不删除) ---
     full_list = []
     skipping_level = -1 # -1 表示正常状态，非负数表示需要跳过该层级及其子级
+
+    # root_level = “这段特殊处理子树的原始根层级”
+    # active = “当前扫描位置是否还在该特殊子树区域里”
+    # 40 卷：仅命中目标子树时，根及其子孙整体提升一级
+    vol40_root_level = None
+    vol40_active = False
+    # 41 卷：仅命中目标子树时，子树内 split_level=3，其余维持 2
+    vol41_root_level = None
+    vol41_active = False
 
     # 1. 标记黑名单
     for item in toc:
@@ -139,16 +153,53 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL):
             is_blacklisted = True
             skipping_level = lvl
 
+        normalized_title = normalize_title(title.strip())
+
+        # 40 卷：定位并维护目标子树激活状态（只作用于该子树）
+        if vol == 40:
+            if vol40_active and vol40_root_level is not None and lvl <= vol40_root_level:
+                vol40_active = False
+            if not vol40_active and normalized_title == VOL40_PROMOTE_ROOT_TITLE:
+                vol40_root_level = lvl
+                vol40_active = True
+
+        # 41 卷：定位并维护目标子树激活状态（只作用于该子树）
+        if vol == 41:
+            if vol41_active and vol41_root_level is not None and lvl <= vol41_root_level:
+                vol41_active = False
+            if not vol41_active and normalized_title == VOL41_LOCAL_SPLIT_ROOT_TITLE:
+                vol41_root_level = lvl
+                vol41_active = True
+
+        # 计算 effective_level
+        eff_lvl = lvl
+
+        # 通用 force_md：把该节点视为 split_level 层
         force_md = _is_force_md_title(title)
+        if force_md:
+            eff_lvl = split_level
+
+        # 40 卷特殊：仅目标子树内整体提升一级
+        if vol == 40 and vol40_active and vol40_root_level is not None:
+            if lvl >= vol40_root_level:
+                eff_lvl = max(1, eff_lvl - 1)
+
+        # 41 卷特殊：仅目标子树内 local_split_level=3
+        local_split_level = split_level
+        if vol == 41 and vol41_active and vol41_root_level is not None:
+            if lvl >= vol41_root_level:
+                local_split_level = 3
+
         full_list.append({
-            "level": lvl,
+            "level": lvl,   # 书签原本等级
             "title": title.strip(),
             "start": page - 1,
             "end": -1,  # 待计算
             "is_blacklisted": is_blacklisted,  # 关键标记
             "has_children": False,   # 默认为 False，稍后计算
             "force_md": force_md,
-            "effective_level": split_level if force_md else lvl,  # 强制 md 视为 split_level 层级
+            "effective_level": eff_lvl, # 修正后的判定层级
+            "local_split_level": local_split_level, # 局部切分阈值
         })
 
     # --- 第二步：计算 has_children ---
@@ -200,7 +251,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         print(f"❌ 无法打开 {input_pdf.name}: {e}")
         return
 
-    toc = extract_toc_structure(doc, split_level)
+    toc = extract_toc_structure(doc, split_level, input_pdf.name)
     print(f"🔍 有效书签: {len(toc)} 个\n")
 
     # 路径栈和标题栈
@@ -217,6 +268,8 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
     # 遍历书签
     for item in toc:
         lvl = item['level']
+        eff_lvl = item.get('effective_level', lvl)
+        local_split_level = item.get('local_split_level', split_level)
         title = normalize_title(item['title'])
         start = item['start']
         end = item['end']
@@ -238,20 +291,20 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         force_md = item.get("force_md", False)  # 已在 extract_toc_structure 中计算
 
         # 判定 0.5: 强制目录级（优先级低于 force_md）
-        # 仅在 lvl<=split_level 时生效，否则「附录」等作为文章内章节应保持 🔹，不提升
-        force_folder = not force_md and _is_force_folder_title(title) and (lvl <= split_level)
+        # 仅在 eff_lvl<=local_split_level 时生效，否则「附录」等作为文章内章节应保持 🔹，不提升
+        force_folder = not force_md and _is_force_folder_title(title) and (eff_lvl <= local_split_level)
 
         # 判定 1: 这是一个文件吗？
         # 条件 X: 强制 md 级
         # 条件 A: 刚好到达切分层级
         # 条件 B: 还没到层级，但是它没有子节点了 (光杆司令，如"口号")
-        is_file = force_md or (lvl == split_level) or (lvl < split_level and not has_children)
+        is_file = force_md or (eff_lvl == local_split_level) or (eff_lvl < local_split_level and not has_children)
         if force_folder:
             is_file = False
 
         # 判定 2: 这是一个文件夹吗？
         # 条件: 非强制 md，还没到层级，且有子节点 (容器，如"正文")；或强制目录级
-        is_folder = force_folder or (not force_md and (lvl < split_level and has_children))
+        is_folder = force_folder or (not force_md and (eff_lvl < local_split_level and has_children))
         # 强制目录无子级时，即使是附录/遗稿也应为 📄，不能建空文件夹
         if force_folder and not has_children:
             is_folder = False
@@ -259,7 +312,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         # 判定 3: 它是文件里的标题吗？
         # 条件: 非强制 md，且超过了层级
-        is_content = not force_md and (lvl > split_level)
+        is_content = not force_md and (eff_lvl > local_split_level)
 
         # 提升逻辑：仅当「直接父级」是强制目录时，才将 🔹 提升为 📄
         # 否则会递归提升：小册子...（暴力在历史中的子级）被错误提升
