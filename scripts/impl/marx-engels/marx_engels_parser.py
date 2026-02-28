@@ -19,11 +19,11 @@ FONT_MAP = {
 
 # 页面布局参数（单位：PDF坐标点）
 # measure_margin: 左侧文字边缘 90，缩进后 110 → INDENT_THRESHOLD=105
-MARGIN_TOP_CUT = 110     # 顶部裁剪线：忽略此高度以上的页眉
+MARGIN_TOP_CUT = 115     # 顶部裁剪线：忽略此高度以上的页眉
 MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
-INDENT_THRESHOLD = 105  # 缩进阈值：X坐标大于此值视为新段落（列宁卷1: 左90 单缩进110 双缩进130）
-INDENT_2_THRESHOLD = 120  # 双缩进阈值：黑体且X坐标大于此值 → 引用；单缩进黑体仅当上一行为引用续行时 → 引用
+INDENT_THRESHOLD = 100  # 缩进阈值：X坐标大于此值视为新段落（马恩卷2: 左85 单缩进105 双缩进125）
+INDENT_2_THRESHOLD = 115  # 双缩进阈值：黑体且X坐标大于此值 → 引用；单缩进黑体仅当上一行为引用续行时 → 引用
 CENTER_THRESHOLD = 150   # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
 NOTE_CHAPTER_ENTRY_LEFT_X0 = 95   # 中国编者注释章节条目标记：行首全角数字 (１２３...) 且 x0 < 此值 → 新注释条目
