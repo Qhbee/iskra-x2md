@@ -33,6 +33,19 @@ NOTE_CHAPTER_INDENT_THRESHOLD = 110  # 中国编者注释章节缩进阈值：x0
 DOT_CHAR = "\u00B7"    # 字下加点 / 人名间隔符
 DOT_BELOW_THRESHOLD = 4  # · 的 y0 比前字大超过此值 → 字下加点（人名· 同基线则小）
 
+# 字体名兼容：有些 PDF 会把 GB2312 字体名按错误编码读出（如 SimHei -> ºÚÌå）
+# font=ËÎÌå 宋体
+# font=ºÚÌå 黑体，加粗的
+# font=·ÂËÎ_GB2312 仿宋
+# font=¿¬Ìå_GB2312 楷体
+HEITI_FONT_ALIASES = ["simhei", "ºúìå"]
+FANGSONG_FONT_ALIASES = ["fangsong", "·âëî"]
+KAITI_FONT_ALIASES = ["kaiti", "¿¬ìå"]
+
+
+def _font_has_any(font_lower: str, aliases) -> bool:
+    return any(a in font_lower for a in aliases)
+
 
 def normalize_title(text: str) -> str:
     """
@@ -256,12 +269,12 @@ class MarxEngelsParser:
             if span["size"] > line_max_size: line_max_size = span["size"]
             font_lower = span["font"].lower()
 
-            # 模糊匹配字体名
-            if "fang" in font_lower:    # 仿宋 -> 引用
+            # 模糊匹配字体名（含乱码别名）
+            if _font_has_any(font_lower, FANGSONG_FONT_ALIASES):    # 仿宋 -> 引用
                 has_fangsong = True
-            elif "kai" in font_lower:   # 楷体 -> 斜体
+            elif _font_has_any(font_lower, KAITI_FONT_ALIASES):   # 楷体 -> 斜体
                 has_kaiti = True
-            elif "hei" in font_lower or "bold" in font_lower: # 黑体/粗体 -> 加粗
+            elif _font_has_any(font_lower, HEITI_FONT_ALIASES) or "bold" in font_lower: # 黑体/粗体 -> 加粗
                 has_heiti = True
 
         # --- 步骤 2: 决定整行的前缀 (Markdown Syntax) ---
@@ -426,8 +439,8 @@ class MarxEngelsParser:
             if not is_punctuation:
                 last_type = current_type
 
-            need_bold = "hei" in font_lower or "bold" in font_lower or bool(flags & 16)
-            need_italic = has_underdot[i] or "kai" in font_lower or bool(flags & 2)
+            need_bold = _font_has_any(font_lower, HEITI_FONT_ALIASES) or "bold" in font_lower or bool(flags & 16)
+            need_italic = has_underdot[i] or _font_has_any(font_lower, KAITI_FONT_ALIASES) or bool(flags & 2)
 
             # SUBTITLE (副标题) 特殊处理：加粗（span_prefix 已在上方算出）
             if span_prefix == "SUBTITLE":
