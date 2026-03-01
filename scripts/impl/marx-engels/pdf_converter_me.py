@@ -193,7 +193,7 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name:
         full_list.append({
             "level": lvl,   # 书签原本等级
             "title": title.strip(),
-            "start": page - 1,
+            "start": page - 1 if page and page > 0 else -1,
             "end": -1,  # 待计算
             "is_blacklisted": is_blacklisted,  # 关键标记
             "has_children": False,   # 默认为 False，稍后计算
@@ -219,12 +219,13 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name:
         # force_md 子级（如 注释）的 effective_level=SPLIT_LEVEL，会截断父级范围
         boundary_index = -1
         for j in range(i + 1, len(full_list)):
-            if full_list[j]['effective_level'] <= current['effective_level']:
+            # 只用有“有效页码”的同级/上级节点作为边界，避免被 page<=0 的结构书签误截断
+            if full_list[j]['start'] >= 0 and full_list[j]['effective_level'] <= current['effective_level']:
                 boundary_index = j
                 break
 
         if boundary_index != -1:
-            # 结束页 = 下一个边界节点的开始页 - 1
+            # 结束页 = 下一个有效边界节点的开始页 - 1
             end_page = full_list[boundary_index]['start'] - 1
         else:
             # 没找到边界，说明是全书最后
