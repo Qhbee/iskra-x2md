@@ -112,6 +112,25 @@ def clean_filename(text):
     """文件名清洗，去特殊字符"""
     return re.sub(r'[\\/:*?"<>|]', '_', sanitize_surrogates(text)).strip()
 
+# 修复无效页码的书签导致的页码问题
+# 设计说明（宁可重复，不漏内容）：
+#     A) 物理页锚点
+#         - raw_start: PDF 原始页码（可能为 -1，表示无有效页码）
+#         - resolved_start: 实际参与切分的页码，尽量回填为有效页
+#         规则：
+#             1) raw_start >= 0 -> resolved_start = raw_start
+#             2) raw_start < 0  -> 先找后方 first-hit 有效页
+#             3) 仍无            -> 再找前方最近有效页
+#             4) 仍无            -> 置为 -1（极端坏 TOC）
+#     B) end 计算
+#         - end = 下一个“同级/上级节点”的 resolved_start - 1
+#         - 若无下一个边界，则到文档末页
+#     C) 生成策略
+#         - 📄：用于生成 md（允许范围重复，避免漏切）
+#         - 📂/🔹：仅用于结构展示/诊断，不直接生成文章
+#     D) 展示策略
+#         - raw_start=-1 时，不显示 start+1（避免出现 0 页）
+#         - 展示 resolved_start（若有）并附加告警标记
 
 def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name: str = ""):
     """
@@ -190,10 +209,12 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name:
             if lvl >= vol41_root_level:
                 local_split_level = 3
 
+        raw_start = page - 1 if page and page > 0 else -1
         full_list.append({
             "level": lvl,   # 书签原本等级
             "title": title.strip(),
-            "start": page - 1 if page and page > 0 else -1,
+            "raw_start": raw_start,              # 原始页码（可能为 -1）
+            "resolved_start": raw_start,         # 用于切分与输出的起始页（可回填）
             "end": -1,  # 待计算
             "is_blacklisted": is_blacklisted,  # 关键标记
             "has_children": False,   # 默认为 False，稍后计算
@@ -209,10 +230,76 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name:
             full_list[i]['has_children'] = True
 
     # --- 第三步：计算页码 (用 effective_level，force_md 子级视为同级边界，使用包含黑名单的全量列表作为参考) ---
-    # 父级 end = 下一个同级/更高级节点的 start - 1。force_md 的 effective_level=SPLIT_LEVEL，
-    # 会截断父级。此逻辑仅正确适用于 force_md 连续排在父级末尾的情形（见 FORCE_MD_TITLES 注释）。
+    #
+    # (3.1) 物理页锚点回填：根据 raw_start 回填 resolved_start（按节点语义选择夹逼方向）
+    #   - raw_start>=0：直接用原始页码
+    #   - raw_start<0：
+    #       * 📂(容器)优先“向后 first-hit”（更像章节封面，起点取首个子项）
+    #       * 📄/🔹优先“向前最近”（更像挂在上一个有效锚点下）
+    #     若首选方向失败，再走反方向；再失败则保持 -1
     for i in range(len(full_list)):
         current = full_list[i]
+        if current['raw_start'] >= 0:
+            current['resolved_start'] = current['raw_start']
+            continue
+
+        eff_lvl = current['effective_level']
+        local_split_level = current['local_split_level']
+        has_children = current['has_children']
+        force_md = current['force_md']
+        title = normalize_title(current['title'])
+
+        # 用与执行阶段近似一致的语义判定（用于决定 fallback 方向）
+        force_folder = (not force_md) and _is_force_folder_title(title) and (eff_lvl <= local_split_level)
+        is_file_like = force_md or (eff_lvl == local_split_level) or (eff_lvl < local_split_level and not has_children)
+        if force_folder:
+            is_file_like = False
+        is_folder_like = force_folder or (not force_md and (eff_lvl < local_split_level and has_children))
+        if force_folder and not has_children:
+            is_folder_like = False
+            is_file_like = True
+        is_content_like = (not force_md) and (eff_lvl > local_split_level)
+
+        def _find_next_valid_raw_start(idx: int) -> int:
+            for k in range(idx + 1, len(full_list)):
+                if full_list[k]['raw_start'] >= 0:
+                    return full_list[k]['raw_start']
+            return -1
+
+        def _find_prev_valid_raw_start(idx: int) -> int:
+            for k in range(idx - 1, -1, -1):
+                if full_list[k]['raw_start'] >= 0:
+                    return full_list[k]['raw_start']
+            return -1
+
+        # 方向策略：📂 先后向；📄/🔹 先前向
+        if is_folder_like:
+            fallback = _find_next_valid_raw_start(i)
+            if fallback < 0:
+                fallback = _find_prev_valid_raw_start(i)
+        elif is_file_like or is_content_like:
+            fallback = _find_prev_valid_raw_start(i)
+            if fallback < 0:
+                fallback = _find_next_valid_raw_start(i)
+        else:
+            # 理论兜底：未知类型时按“先后向”
+            fallback = _find_next_valid_raw_start(i)
+            if fallback < 0:
+                fallback = _find_prev_valid_raw_start(i)
+
+        current['resolved_start'] = fallback
+
+    # (3.2) 计算 end：（使用 effective_level + resolved_start）
+    # 父级 end = 下一个同级/更高级节点的 resolved_start - 1。force_md 的 effective_level=split_level，
+    # 可能会截断父级范围。注意：此逻辑仅正确适用于 force_md 连续排在父级末尾的情形（见 FORCE_MD_TITLES 注释）。
+    for i in range(len(full_list)):
+        current = full_list[i]
+        current_start = current['resolved_start']
+
+        # 仍无可用页码（理论上仅极端坏 TOC 会发生）
+        if current_start < 0:
+            current['end'] = -1
+            continue
 
         # 寻找下一个“有效同级或更高级”的节点 (作为物理边界)
         # 即使那个节点是黑名单，它也是物理存在的，必须作为边界！
@@ -220,20 +307,22 @@ def extract_toc_structure(doc, split_level: int = DEFAULT_SPLIT_LEVEL, pdf_name:
         boundary_index = -1
         for j in range(i + 1, len(full_list)):
             # 只用有“有效页码”的同级/上级节点作为边界，避免被 page<=0 的结构书签误截断
-            if full_list[j]['start'] >= 0 and full_list[j]['effective_level'] <= current['effective_level']:
+            # 额外约束：边界页必须严格大于当前 start，否则像“缺页码项回填到前一页锚点”的情况会把前一篇错误截短成 1 页。
+            next_start = full_list[j]['resolved_start']
+            if next_start > current_start and next_start >= 0 and full_list[j]['effective_level'] <= current['effective_level']:
                 boundary_index = j
                 break
 
         if boundary_index != -1:
             # 结束页 = 下一个有效边界节点的开始页 - 1
-            end_page = full_list[boundary_index]['start'] - 1
+            end_page = full_list[boundary_index]['resolved_start'] - 1
         else:
             # 没找到边界，说明是全书最后
             end_page = total_pages - 1
 
         # 修正逻辑：不能小于 start
-        if end_page < current['start']:
-            end_page = current['start']
+        if end_page < current_start:
+            end_page = current_start
 
         current['end'] = end_page
 
@@ -272,7 +361,8 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
         eff_lvl = item.get('effective_level', lvl)
         local_split_level = item.get('local_split_level', split_level)
         title = normalize_title(item['title'])
-        start = item['start']
+        raw_start = item.get('raw_start', -1)
+        resolved_start = item.get('resolved_start', raw_start)
         end = item['end']
         has_children = item['has_children']
 
@@ -331,9 +421,13 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         # ========== 🚧 执行动作 ==========
 
-        warn = f"⚠️ 结构书签无有效页码" if start < 0 else ""
+        # 展示规则：raw_start<0 打告警；展示 resolved_start（避免 -1 显示为 0 页）
+        warn = f"⚠️ 结构书签无有效页码(raw_page<=0)" if raw_start < 0 else ""
         debug = True
-        page_info = f"--- (page: {start + 1}~{end + 1}, 共 {end - start + 1} 页)..." if warn or debug else ""
+        if resolved_start >= 0 and end >= 0:
+            page_info = f"--- (page: {resolved_start + 1}~{end + 1}, 共 {end - resolved_start + 1} 页)..." if warn or debug else ""
+        else:
+            page_info = "--- (page: N/A)..." if warn or debug else ""
 
         # --- 模式 A: 侦察模式 (DRY_RUN = True) ---
 
@@ -382,7 +476,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
             cats = [title_stack[k] for k in sorted(title_stack.keys()) if k < lvl]
             front_matter = {
                 "title": title,
-                "order": start + 1,
+                "order": resolved_start + 1,
                 "category": "/".join(cats),
                 "book": input_pdf.stem
             }
@@ -392,7 +486,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
             try:
                 # === 关键：传入页码列表，使用 MarxEngelsParser 一次性处理整节，而非逐页解析 ===
-                pages_to_process = list(range(start, end + 1))
+                pages_to_process = list(range(resolved_start, end + 1))
                 if not pages_to_process: continue
 
                 # 调用 parse_chapter_pages
