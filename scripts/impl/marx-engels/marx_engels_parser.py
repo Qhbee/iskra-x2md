@@ -544,9 +544,12 @@ class MarxEngelsParser:
             # is_quote_continuation = True
             clean_line = clean_line[2:]
 
-        # 2. 标题续行拼接：上一段是标题且本行也是标题续行，去掉 "#" 前缀再拼
+        # 2. 标题续行拼接：上一行和本行是“同级标题”才视为续行，去掉本行 "#" 前缀再拼
         if not is_new_para and self.current_para and re.match(r'^#+\s', self.current_para) and re.match(r'^#+\s', clean_line):
-            clean_line = re.sub(r'^#+\s*', '', clean_line)
+            prev_m = re.match(r'^(#+)\s', self.current_para)
+            curr_m = re.match(r'^(#+)\s', clean_line)
+            if prev_m and curr_m and len(prev_m.group(1)) == len(curr_m.group(1)):
+                clean_line = re.sub(r'^#+\s*', '', clean_line)
 
         if is_new_para:
             # 新段落：将旧段落推入 buffer，开始记录新段落
@@ -556,6 +559,14 @@ class MarxEngelsParser:
         else:
             # 续行：拼接到当前段落
             if self.current_para:
+                # [防粘连兜底] 若两行都是标题但级别不同，强制断段（避免 # 与 ## 粘在同一行）
+                prev_m = re.match(r'^(#+)\s', self.current_para)
+                curr_m = re.match(r'^(#+)\s', clean_line)
+                if prev_m and curr_m and len(prev_m.group(1)) != len(curr_m.group(1)):
+                    self.body_buffer.append(self.current_para)
+                    self.current_para = clean_line
+                    return
+
                 merged = False
 
                 # [核心修复] 粗斜体/字下加点融合
@@ -715,10 +726,15 @@ class MarxEngelsParser:
                         is_new = True
                         is_comment_note_start = True
 
-                # [判定 3] 标题强制换段（但连续多行同标题视为续行，合并为一行）
+                # [判定 3] 标题强制换段（仅“同级标题”才视为续行，合并为一行）
                 if prefix.startswith("#"):
+                    # hash 不是指哈希函数，而是指标题中的 # 符号
+                    prev_hash = 0
+                    curr_hash = len(prefix) - len(prefix.lstrip("#"))
                     if last_line_prefix.strip().startswith("#"):
-                        # 上一行也是标题 -> 标题续行，不换段
+                        prev_hash = len(last_line_prefix.strip()) - len(last_line_prefix.strip().lstrip("#"))
+                    # 上一行也是标题且级别相同 -> 标题续行，不换段
+                    if prev_hash > 0 and prev_hash == curr_hash:
                         is_new = False
                     else:
                         is_new = True
