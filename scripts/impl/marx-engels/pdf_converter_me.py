@@ -330,16 +330,20 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
         # ========== 🚧 执行动作 ==========
 
+        warn = f"⚠️ 结构书签无有效页码" if start < 0 else ""
+        debug = True
+        page_info = f"--- (page: {start + 1}~{end + 1}, 共 {end - start + 1} 页)..." if warn or debug else ""
+
         # --- 模式 A: 侦察模式 (DRY_RUN = True) ---
 
         if DRY_RUN:
             # 如果想统计页码，可以加上 (p{start + 1}-p{end + 1}, 共{end - start + 1}页)
             if is_file:
-                print(f"{indent}📄 {title}")
+                print(f"{indent}📄 {title} {warn} {page_info}")
             elif is_folder:
-                print(f"{indent}📂 {title}")
+                print(f"{indent}📂 {title} {warn} {page_info}")
             else:
-                print(f"{indent}🔹 {title}")
+                print(f"{indent}🔹 {title} {warn} {page_info}")
             continue
 
         # --- 模式 B: 执行模式 (DRY_RUN = False) ---
@@ -358,7 +362,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
 
             path_stack[lvl] = current_path
             # force_folder_levels 已在上方统一更新
-            print(f"{indent}📂 创建目录: {title}")
+            print(f"{indent}📂 创建目录: {title} {warn} {page_info}")
 
         elif is_file:
             parent = path_stack.get(lvl - 1, output_dir)
@@ -383,7 +387,7 @@ def process_one_pdf(input_pdf: Path, output_dir: Path):
             }
 
             # 采用 Page Bundles 模式
-            print(f"{indent}🚀 转换“文章包” 📦 : {title} ({start + 1}-{end + 1})...")
+            print(f"{indent}🚀 转换“文章包” 📦 : {title} {warn} {page_info}")
 
             try:
                 # === 关键：传入页码列表，使用 MarxEngelsParser 一次性处理整节，而非逐页解析 ===
