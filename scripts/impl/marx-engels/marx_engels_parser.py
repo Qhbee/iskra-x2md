@@ -302,9 +302,9 @@ class MarxEngelsParser:
         # 3. 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
         elif has_fangsong and article_title != "注释":
             line_prefix = "> "
-        # 4. 7.4 和 8.2号小字 -> 引用块 (排除楷体和黑体，避免误伤注脚或强调文本)
-        # 注释章节跳过：8.2 会误给续行加 > ，破坏列表格式
-        elif mapped_prefix == "> " and not has_kaiti and not has_heiti and article_title != "注释":
+        # 4. 7.0 和 7.7小字 -> 引用块 (放宽限制：允许夹杂楷体和黑体短语，避免整行丢失引用前缀。)
+        # 注释章节跳过：7.7 会误给续行加 > ，破坏列表格式
+        elif mapped_prefix == "> " and article_title != "注释":
             line_prefix = "> "
 
         # 如果有前缀，先拼接到结果中
