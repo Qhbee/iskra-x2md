@@ -282,6 +282,7 @@ class MarxEngelsParser:
         # --- 步骤 2: 决定整行的前缀 (Markdown Syntax) ---
         line_prefix = ""
         mapped_prefix = ""
+        is_subtitle_line = False
 
         # 先看字号映射
         if FONT_MAP:
@@ -299,10 +300,15 @@ class MarxEngelsParser:
         elif has_heiti and x0 >= CENTER_THRESHOLD and line_max_size >= BODY_BASE_SIZE:
             line_prefix = "#### "
         # 2.2/2.3 黑体缩进引用逻辑已移除（马恩全集不使用该规则）
-        # 3.1 仿宋居中且不小于正文字号基线 -> 五级标题 (#####)
+        # 3.1 仿宋居中且不小于正文字号基线 -> 五级标题 (#####) 或副标题（斜体）
         #    优先级高于仿宋引用，避免居中小标题被误判为引用段。
+        #    限制：上一行是 # 或 ## 时，视为副标题，用斜体包裹（不输出 #####）
         elif has_fangsong and x0 >= CENTER_THRESHOLD and line_max_size >= BODY_BASE_SIZE and article_title != "注释":
             line_prefix = "##### "
+            prev_stripped = (prev_line_prefix or "").strip()
+            if prev_stripped in ("#", "##"):
+                line_prefix = ""  # 副标题：不输出 #####，后续用斜体包裹
+                is_subtitle_line = True
         # 3.2 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
         elif has_fangsong and article_title != "注释":
             line_prefix = "> "
@@ -527,6 +533,10 @@ class MarxEngelsParser:
             prefix_len = len(line_prefix)
             content = formatted_text[prefix_len:].strip()
             formatted_text = line_prefix + content
+
+        elif is_subtitle_line:
+            # 副标题（仿宋居中且上一行是 #/##）：斜体包裹
+            formatted_text = "*" + formatted_text.strip() + "*"
 
         return formatted_text, line_prefix, underdot_pending, last_bbox
 
