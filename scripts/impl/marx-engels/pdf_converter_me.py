@@ -32,6 +32,12 @@ OUTPUT_BASE = PROJECT_ROOT / "data/processed/marx-engels/马克思恩格斯全�
 # False = 执行模式 (生成最终 Markdown)
 DRY_RUN = False
 
+# 2.5 单卷验证：只处理指定卷号，其余跳过。None = 处理全部
+# 例: ONLY_VOLUME = 16   → 仅处理「第16卷」
+# 例: ONLY_VOLUME = "26Ⅰ" → 仅处理「第26卷Ⅰ」（支持上下、ⅠⅡⅢ 等后缀）
+# 例: ONLY_VOLUME = "14上" → 仅处理「第14卷上」
+ONLY_VOLUME = None
+
 # 3. 切分层级
 DEFAULT_SPLIT_LEVEL = 1 # 默认用 1 级
 # 每个级别对应的卷（按 base_vol 分组，该卷所有分册用同一层级）
@@ -520,6 +526,20 @@ def main():
     print(f"📄 共 {len(pdf_files)} 个 PDF\n")
 
     for i, input_pdf in enumerate(pdf_files):
+        # 单卷验证：只处理指定卷
+        if ONLY_VOLUME is not None:
+            if isinstance(ONLY_VOLUME, str):
+                # 字符串：按子串匹配（支持 26Ⅰ、14上 等）
+                match = ONLY_VOLUME in input_pdf.stem
+            else:
+                # 整数：按卷号匹配（26 会匹配 26Ⅰ、26Ⅱ、26Ⅲ 等）
+                m = re.search(r"第?(\d+)卷", input_pdf.stem)
+                vol = int(m.group(1)) if m else None
+                match = vol == ONLY_VOLUME
+            if not match:
+                print(f"⏭️ [{i + 1}/{len(pdf_files)}] 跳过 {input_pdf.name} (非目标卷 {ONLY_VOLUME})")
+                continue
+
         output_dir = OUTPUT_BASE / input_pdf.stem
         print("=" * 60)
         print(f"📖 [{i + 1}/{len(pdf_files)}] {input_pdf.name}")
