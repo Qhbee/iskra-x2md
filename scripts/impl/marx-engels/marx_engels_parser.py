@@ -25,12 +25,15 @@ MARGIN_TOP_CUT = 115     # 顶部裁剪线：忽略此高度以上的页眉
 MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
 INDENT_THRESHOLD = 100  # 缩进阈值：X坐标大于此值视为新段落（马恩卷2: 左85 单缩进105）
-CENTER_THRESHOLD = 150   # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
+CENTER_THRESHOLD = 110   # 居中阈值：X坐标大于此值且为黑体，视为四级标题 (####)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
 NOTE_CHAPTER_ENTRY_LEFT_X0 = 95   # 中国编者注释章节条目标记：行首全角数字 (１２３...) 且 x0 < 此值 → 新注释条目
 NOTE_CHAPTER_INDENT_THRESHOLD = 110  # 中国编者注释章节缩进阈值：x0 > 此值 → 注释续行（新段，加 2 格缩进）
 DOT_CHAR = "\u00B7"    # 字下加点 / 人名间隔符
 DOT_BELOW_THRESHOLD = 4  # · 的 y0 比前字大超过此值 → 字下加点（人名· 同基线则小）
+
+# 正文字号基线：用于限制“黑体居中标题”不能比正文更小
+BODY_BASE_SIZE = 9.1
 
 # 字体名兼容：有些 PDF 会把 GB2312 字体名按错误编码读出（如 SimHei -> ºÚÌå）
 # font=ËÎÌå 宋体
@@ -291,9 +294,10 @@ class MarxEngelsParser:
         x0 = line["bbox"][0]
         if mapped_prefix.startswith("#"):
             line_prefix = mapped_prefix
-        # 2.1 居中的黑体 (x0 >= CENTER) -> 三级标题 (###)
-        elif has_heiti and x0 >= CENTER_THRESHOLD:
-            line_prefix = "### "
+        # 2.1 居中的黑体 (x0 >= CENTER) -> 四级标题 (####)
+        # 额外限制：字号不能小于正文基线，避免把小号黑体误判为标题
+        elif has_heiti and x0 >= CENTER_THRESHOLD and line_max_size >= BODY_BASE_SIZE:
+            line_prefix = "#### "
         # 2.2/2.3 黑体缩进引用逻辑已移除（马恩全集不使用该规则）
         # 3. 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
         elif has_fangsong and article_title != "注释":
