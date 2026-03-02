@@ -25,7 +25,7 @@ MARGIN_TOP_CUT = 115     # 顶部裁剪线：忽略此高度以上的页眉
 MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
 INDENT_THRESHOLD = 100  # 缩进阈值：X坐标大于此值视为新段落（马恩卷2: 左85 单缩进105）
-CENTER_THRESHOLD = 110   # 居中阈值：X坐标大于此值且为黑体，视为四级标题 (####)
+CENTER_THRESHOLD = 110   # 居中阈值：X坐标大于此值，黑体视为四级标题 (####)，仿宋视为五级标题 (#####)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
 NOTE_CHAPTER_ENTRY_LEFT_X0 = 95   # 中国编者注释章节条目标记：行首全角数字 (１２３...) 且 x0 < 此值 → 新注释条目
 NOTE_CHAPTER_INDENT_THRESHOLD = 110  # 中国编者注释章节缩进阈值：x0 > 此值 → 注释续行（新段，加 2 格缩进）
@@ -299,7 +299,11 @@ class MarxEngelsParser:
         elif has_heiti and x0 >= CENTER_THRESHOLD and line_max_size >= BODY_BASE_SIZE:
             line_prefix = "#### "
         # 2.2/2.3 黑体缩进引用逻辑已移除（马恩全集不使用该规则）
-        # 3. 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
+        # 3.1 仿宋居中且不小于正文字号基线 -> 五级标题 (#####)
+        #    优先级高于仿宋引用，避免居中小标题被误判为引用段。
+        elif has_fangsong and x0 >= CENTER_THRESHOLD and line_max_size >= BODY_BASE_SIZE and article_title != "注释":
+            line_prefix = "##### "
+        # 3.2 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
         elif has_fangsong and article_title != "注释":
             line_prefix = "> "
         # 4. 7.0 和 7.7小字 -> 引用块 (放宽限制：允许夹杂楷体和黑体短语，避免整行丢失引用前缀。)
