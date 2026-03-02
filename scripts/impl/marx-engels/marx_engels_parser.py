@@ -737,8 +737,13 @@ class MarxEngelsParser:
 
                 # [判定 4] 引用块逻辑
                 if prefix.startswith(">"):
-                    # [核心修复] 正文/引用防粘连
+                    # [核心修复] 正文/引用防粘连：当前是引用，上一段是正文 → 新段
                     if self.current_para and not self.current_para.startswith("> "):
+                        is_new = True
+                else:
+                    # [核心修复] 引用/正文防粘连：当前是正文，上一行是引用（如日期 7.7→> 与称呼 9.1→正文）
+                    # 字号不同不应粘连，书信顶格称呼应单独成段
+                    if last_line_prefix.strip().startswith(">") and self.current_para and self.current_para.startswith("> "):
                         is_new = True
 
                 # [核心修复] 注脚跟随 (去掉 $)
