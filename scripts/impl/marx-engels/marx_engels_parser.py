@@ -24,8 +24,7 @@ FONT_MAP = {
 MARGIN_TOP_CUT = 115     # 顶部裁剪线：忽略此高度以上的页眉
 MARGIN_BOTTOM_CUT = 520 # 底部裁剪线：忽略 Y > 520 的区域
 DETECT_THRESHOLD = 40   # 全页注脚检测阈值：从此高度才开始检测注脚
-INDENT_THRESHOLD = 100  # 缩进阈值：X坐标大于此值视为新段落（马恩卷2: 左85 单缩进105 双缩进125）
-INDENT_2_THRESHOLD = 115  # 双缩进阈值：黑体且X坐标大于此值 → 引用；单缩进黑体仅当上一行为引用续行时 → 引用
+INDENT_THRESHOLD = 100  # 缩进阈值：X坐标大于此值视为新段落（马恩卷2: 左85 单缩进105）
 CENTER_THRESHOLD = 150   # 居中阈值：X坐标大于此值且为黑体，视为三级标题 (###)
 SAME_Y_TOLERANCE = 1.5  # 同一视觉行判定：y0 相差小于此值则合并
 NOTE_CHAPTER_ENTRY_LEFT_X0 = 95   # 中国编者注释章节条目标记：行首全角数字 (１２３...) 且 x0 < 此值 → 新注释条目
@@ -254,7 +253,7 @@ class MarxEngelsParser:
         2. 标题层级判定
         3. 注脚符号替换
         4. 智能去空（修复标题空格）
-        返回 (formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation)
+        返回 (formatted_text, line_prefix, underdot_pending, last_bbox)
         """
         spans = line["spans"]
         formatted_text = ""
@@ -280,8 +279,6 @@ class MarxEngelsParser:
         # --- 步骤 2: 决定整行的前缀 (Markdown Syntax) ---
         line_prefix = ""
         mapped_prefix = ""
-        is_heiti_indent_quote = False  # 任意黑体缩进得 "> " 时 True
-        is_heiti_single_indent_continuation = False  # 仅 2.3 单缩进续行时 True，用于续行合并
 
         # 先看字号映射
         if FONT_MAP:
@@ -297,15 +294,7 @@ class MarxEngelsParser:
         # 2.1 居中的黑体 (x0 >= CENTER) -> 三级标题 (###)
         elif has_heiti and x0 >= CENTER_THRESHOLD:
             line_prefix = "### "
-        # 2.2 双缩进黑体 (INDENT_2 < x0 < CENTER) -> 引用（新块，不接续上一引用）
-        elif has_heiti and x0 > INDENT_2_THRESHOLD:
-            line_prefix = "> "
-            is_heiti_indent_quote = True
-        # 2.3 单缩进黑体 (INDENT < x0 <= INDENT_2) -> 引用 仅当上一行为引用续行；是续行，可合并
-        elif has_heiti and x0 > INDENT_THRESHOLD and (prev_line_prefix or "").strip().startswith(">"):
-            line_prefix = "> "
-            is_heiti_indent_quote = True
-            is_heiti_single_indent_continuation = True
+        # 2.2/2.3 黑体缩进引用逻辑已移除（马恩全集不使用该规则）
         # 3. 仿宋字体 -> 引用块（注释章节跳过，避免破坏列表格式）
         elif has_fangsong and article_title != "注释":
             line_prefix = "> "
@@ -343,7 +332,7 @@ class MarxEngelsParser:
                 chars_list.append((c["c"], c["bbox"], font_lower, size, flags))
 
         if not chars_list:
-            return formatted_text.strip(), line_prefix, False, None, is_heiti_indent_quote, is_heiti_single_indent_continuation
+            return formatted_text.strip(), line_prefix, False, None
 
         # --- 步骤 4: 字下加点标记（· 属于下一字，跨行靠 prev_underdot / prev_last_bbox 传入）---
         is_skip = [False] * len(chars_list)
@@ -531,7 +520,7 @@ class MarxEngelsParser:
             content = formatted_text[prefix_len:].strip()
             formatted_text = line_prefix + content
 
-        return formatted_text, line_prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation
+        return formatted_text, line_prefix, underdot_pending, last_bbox
 
     def append_to_buffer(self, clean_line, is_new_para):
         """
@@ -692,9 +681,8 @@ class MarxEngelsParser:
 
             # === Pass 1: 处理正文区域 ===
             last_line_prefix = ""
-            last_is_heiti_indent_quote = False
             for line in body_lines_raw:
-                line_text, prefix, underdot_pending, last_bbox, is_heiti_indent_quote, is_heiti_single_indent_continuation = self.process_spans_in_line(
+                line_text, prefix, underdot_pending, last_bbox = self.process_spans_in_line(
                     line, page_note_queue, underdot_pending, last_bbox, last_line_prefix, article_title
                 )
                 # [注意] strip() 在这里调用，去除 Raw 字符串里的物理缩进
@@ -744,9 +732,6 @@ class MarxEngelsParser:
                     # [核心修复] 正文/引用防粘连
                     if self.current_para and not self.current_para.startswith("> "):
                         is_new = True
-                    # 仅 黑体双缩进+黑体单缩进续行 合并；黑体双缩进+黑体双缩进 不合并（换行）；仿宋、小字等引用不合并
-                    elif last_is_heiti_indent_quote and is_heiti_single_indent_continuation:
-                        is_new = False
 
                 # [核心修复] 注脚跟随 (去掉 $)
                 # 允许注脚符号后跟文字 (如 "[^1]。内容") 紧接上一行
@@ -766,7 +751,6 @@ class MarxEngelsParser:
 
                 self.append_to_buffer(clean_line, is_new)
                 last_line_prefix = prefix
-                last_is_heiti_indent_quote = is_heiti_indent_quote
 
             # === Pass 2: 处理页底注脚区域（基于 Y 坐标匹配）===
             # 列宁的：每行都缩进，只有 ① 序号突出。只用序号判断新注脚，不用缩进。（斯大林的：需用缩进判断，因正文与注脚布局类似）
