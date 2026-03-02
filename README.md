@@ -18,7 +18,7 @@
 
 ### 马克思、恩格斯
 
-- 🔄 Z-library 的 pdf，说是第二版，其实只有第一卷是第二版，其余为同中马库，但是多了书签
+- ✅ Z-library 的 pdf，说是第二版，其实只有第一卷是第二版，其余为同中马库，但是多了书签
 - 🔄 中马库 [马克思恩格斯全集（文字版）](https://www.marxists.org/chinese/marx-engels/index.htm) 共 50 卷，不全
 - 🔄 中马库 [马克思恩格斯全集·Ⅰ版（文字版PDF）](https://www.marxists.org/chinese/pdf/me-old.htm) 共 50 卷
 - ⬜ 中马库 [马克思恩格斯全集·Ⅱ版（文字版PDF）](https://www.marxists.org/chinese/pdf/me-2.htm) 有增删，翻译质量更好，卷数更多，但是没出完，不全
