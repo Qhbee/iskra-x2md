@@ -271,6 +271,14 @@ def main():
     output_base = Path(OUTPUT_DIR)
     output_base.mkdir(parents=True, exist_ok=True)
 
+    print(f"📂 输入: {INPUT_EPUB}")
+    print(f"📂 输出: {output_base}")
+    print(f"📄 共 {len(spine_docs)} 个章节\n")
+    print("=" * 60)
+    print(f"📖 {INPUT_EPUB.name}")
+    print("=" * 60)
+
+    category_stack = []
     for d in spine_docs:
         item = d["item"]
         href = d["href"]
@@ -281,14 +289,14 @@ def main():
         # 计算 Page Bundle 路径
         safe_title = clean_filename(title)
         cat_parts = [p for p in category.split("/") if p]
+        last_cat = clean_filename(cat_parts[-1]) if cat_parts else ""
         if cat_parts:
             parent = output_base
             for part in cat_parts:
                 parent = parent / part
             # 当标题与 category 最后一级相同（如 Section02「第二次国内革命战争时期」），
             # 写入 category/index.md，不创建重复子目录
-            last_cat = clean_filename(cat_parts[-1]) if cat_parts else ""
-            if last_cat and last_cat == safe_title:
+            if last_cat == safe_title:
                 article_dir = parent
             else:
                 article_dir = parent / safe_title
@@ -298,7 +306,18 @@ def main():
         article_dir.mkdir(parents=True, exist_ok=True)
         file_path = article_dir / "index.md"
 
-        print(f"🚀 转换: {title} (order={order})...")
+        # 输出未打印的 category 文件夹（与 PDF 执行模式一致）
+        for i, part in enumerate(cat_parts):
+            if i >= len(category_stack) or category_stack[i] != part:
+                indent = "  " * i
+                print(f"{indent}📂 创建目录: {part}")
+                category_stack = category_stack[:i] + [part]
+
+        indent = "  " * len(cat_parts)
+        # section index（标题与 category 最后一级相同）写入 index.md，标注清楚
+        is_section_index = bool(last_cat and last_cat == safe_title)
+        display_title = f"{title} (index.md)" if is_section_index else title
+        print(f"{indent}🚀 转换「文章包」📦 : {display_title}")
 
         try:
             html_raw = item.get_content()
@@ -323,7 +342,7 @@ def main():
             file_path.write_text(final, encoding="utf-8")
 
         except Exception as e:
-            print(f"  ❌ 失败: {e}")
+            print(f"{indent}❌ 失败: {e}")
 
     print("\n✅ 全部转换完成！")
 
