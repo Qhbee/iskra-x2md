@@ -157,10 +157,27 @@ def main():
     print(f"🔍 有效章节: {len(spine_docs)} 个\n")
 
     if DRY_RUN:
+        # 按 category 层级输出树状结构，与 PDF 侦察模式一致
+        category_stack = []
         for d in spine_docs:
-            print(f"  📄 {d['title']} (order={d['order']}, category={d['category']})")
+            cat_parts = [p for p in (d["category"] or "").split("/") if p]
+            title = d["title"]
+
+            # 输出未打印的 category 文件夹（📂）
+            for i, part in enumerate(cat_parts):
+                if i >= len(category_stack) or category_stack[i] != part:
+                    indent = "  " * i
+                    print(f"{indent}📂 {part}")
+                    category_stack = category_stack[:i] + [part]
+
+            # 输出文章（📄）
+            indent = "  " * len(cat_parts)
+            print(f"{indent}📄 {title}")
         print("\n📢 --- 侦察结束 ---")
-        print("请检查上面的输出，确认后将 DRY_RUN 改为 False 执行。")
+        print("请检查上面的输出：")
+        print("1. 标有 📂 的是你想要的分类文件夹吗？")
+        print("2. 标有 📄 的是你想要独立出来的文件吗？")
+        print("如果是，请将 DRY_RUN 改为 False 正式执行。")
         return
 
     output_base = Path(OUTPUT_DIR)
