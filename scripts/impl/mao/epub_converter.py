@@ -289,6 +289,10 @@ def main():
     print("=" * 60)
 
     category_stack = []
+    # 01. 02. 序号（模仿列宁/马恩）：同一父目录下按 spine 顺序递增
+    article_idx_per_parent = {}
+    # path_stack: category 前缀 -> 实际路径（含序号）。子项通过此表找到带序号的父目录
+    path_stack = {"": output_base}
     for d in spine_docs:
         item = d["item"]
         href = d["href"]
@@ -300,18 +304,24 @@ def main():
         safe_title = clean_filename(title)
         cat_parts = [p for p in category.split("/") if p]
         last_cat = clean_filename(cat_parts[-1]) if cat_parts else ""
+        is_section_index = bool(last_cat and last_cat == safe_title)  # 标题与 category 最后一级同名
+
+        # 确定父目录：section index 的父是上一级，普通文章的父是当前 category 的文件夹
+        parent_cat = "/".join(cat_parts[:-1]) if len(cat_parts) > 1 else ("" if cat_parts else "")
+        parent = path_stack.get(parent_cat if is_section_index else category, output_base)
+
+        # 同一 parent 下序号递增，生成 01. 02. 前缀
+        key = str(parent)
+        article_idx_per_parent[key] = article_idx_per_parent.get(key, 0) + 1
+        idx = article_idx_per_parent[key]
+        numbered_name = f"{idx:02d}. {safe_title}"
+
         if cat_parts:
-            parent = output_base
-            for part in cat_parts:
-                parent = parent / part
-            # 当标题与 category 最后一级相同（如 Section02「第二次国内革命战争时期」），
-            # 写入 category/index.md，不创建重复子目录
-            if last_cat == safe_title:
-                article_dir = parent
-            else:
-                article_dir = parent / safe_title
+            article_dir = parent / numbered_name
+            if is_section_index:
+                path_stack[category] = article_dir  # 供子项查找
         else:
-            article_dir = output_base / safe_title
+            article_dir = output_base / numbered_name
 
         article_dir.mkdir(parents=True, exist_ok=True)
         file_path = article_dir / "index.md"
@@ -324,8 +334,6 @@ def main():
                 category_stack = category_stack[:i] + [part]
 
         indent = "  " * len(cat_parts)
-        # section index（标题与 category 最后一级相同）写入 index.md，标注清楚
-        is_section_index = bool(last_cat and last_cat == safe_title)
         display_title = f"{title} (index.md)" if is_section_index else title
         print(f"{indent}🚀 转换「文章包」📦 : {display_title}")
 
