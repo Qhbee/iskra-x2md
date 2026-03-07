@@ -136,6 +136,15 @@ def _common_category_prefix(cat_a: str, cat_b: str) -> str:
     return "/".join(common)
 
 
+# 根级项：href 文件名（英文）→ 中文标题。ebooklib 的 item.title 可能不完整，用 stem 更可靠
+_FRONT_MATTER_ZH = {
+    "Cover": "封面",
+    "Epigraph": "题词",
+    "Author": "作者",
+    "Author1": "作者",
+    "Contents": "目录"
+}
+
 def _href_in_nav(href: str, nav_map: dict) -> bool:
     """检查 href 是否在 toc/nav 中（支持多种路径格式）"""
     if href in nav_map:
@@ -223,7 +232,8 @@ def main():
         if not title and href in nav_map:
             title = nav_map[href][0]
         if not title:
-            title = Path(href).stem or f"章节_{i + 1}"
+            stem = Path(href).stem or f"章节_{i + 1}"
+            title = _FRONT_MATTER_ZH.get(stem, stem)
         cat_info = nav_map.get(href, (title, ""))
         category = cat_info[1] or book_stem
         spine_docs.append({
