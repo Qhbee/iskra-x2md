@@ -4,6 +4,8 @@ EPUB 单 HTML 解析器：清洗、图片提取、HTML→Markdown 转换、后�
 """
 
 import re
+from collections import deque
+from itertools import groupby
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -162,6 +164,7 @@ def _postprocess_paragraph_breaks(text: str) -> str:
     """
     后处理：段落内不插入多余换行。
     目标：段落之间用 \\n\\n，段落内无多余空行。
+    连续 blockquote 行（> 开头）之间只用 \\n，避免引用块内出现空行。
     """
     lines = text.split("\n")
     result = []
@@ -174,7 +177,9 @@ def _postprocess_paragraph_breaks(text: str) -> str:
             result.append(merged)
             current_para.clear()
 
-    for line in lines:
+    lines = deque(lines)
+    while lines:
+        line = lines.popleft()
         stripped = line.strip()
         if stripped.startswith("```"):
             flush_para()
@@ -185,10 +190,17 @@ def _postprocess_paragraph_breaks(text: str) -> str:
             result.append(line)
             continue
 
+        if stripped.startswith(">"):
+            flush_para()
+            block = [stripped]
+            while lines and lines[0].strip().startswith(">"):
+                block.append(lines.popleft().strip())
+            result.append("\n".join(block))
+            continue
+
         is_break = (
             not stripped
             or stripped.startswith("#")
-            or stripped.startswith(">")
             or re.match(r'^[-*+]\s', stripped)
             or re.match(r'^\d+\.\s', stripped)
         )
@@ -228,10 +240,63 @@ def parse_html_to_markdown(
     # 0.5 标题层级归一：最高级提升为 h1，其余顺延（预处理，避免后处理多遍历）
     _normalize_heading_levels_in_soup(soup)
 
-    # 0.6 引用段落 p.a3（宣言、谈话等）、p.a31（引文悬挂，如问答）转为 blockquote
-    for p in soup.find_all("p", class_=lambda c: c and ("a3" in c or "a31" in c)):
+    # 0.6 引用段落：p.a3 连续合并为一个 blockquote；p.a31 不合并，每个单独 blockquote（问/答独立）
+    def _quote_type(tag):
+        if tag.name != "p":
+            return None
+        c = tag.get("class", [])
+        if not c:
+            return None
+        return "a31" if "a31" in c else ("a3" if "a3" in c else None)
+
+    div = soup.find("div", class_="div") or soup.find("body") or soup
+    all_p = div.find_all("p", recursive=True)
+
+    # a3：连续合并
+    for qt, group in groupby(all_p, key=_quote_type):
+        if qt != "a3":
+            continue
+        group = list(group)
+        if not group:
+            continue
         bq = soup.new_tag("blockquote")
-        p.wrap(bq)
+        group[0].insert_before(bq)
+        for p in group:
+            bq.append(p.extract())
+
+    # a31：不合并；含 <br/> 的答分段为多个 p，段间有 > 空行，续行加前导空格
+    for p in list(div.find_all("p", class_=lambda c: c and "a31" in c)):
+        brs = p.find_all("br")
+        if not brs:
+            bq = soup.new_tag("blockquote")
+            p.wrap(bq)
+            continue
+        # 按 br 分段（不修改 DOM，避免空分段时破坏 p）
+        segments = []
+        current = []
+        for child in p.children:
+            if getattr(child, "name", None) == "br":
+                if current:
+                    seg = BeautifulSoup("".join(str(c) for c in current), "html.parser").get_text(separator="", strip=True)
+                    if seg:
+                        segments.append(seg)
+                    current = []
+            else:
+                current.append(child)
+        if current:
+            seg = BeautifulSoup("".join(str(c) for c in current), "html.parser").get_text(separator="", strip=True)
+            if seg:
+                segments.append(seg)
+        if not segments:
+            bq = soup.new_tag("blockquote")
+            p.wrap(bq)
+            continue
+        bq = soup.new_tag("blockquote")
+        for idx, seg in enumerate(segments):
+            new_p = soup.new_tag("p")
+            new_p.string = (" " + seg) if idx > 0 else seg
+            bq.append(new_p)
+        p.replace_with(bq)
 
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
