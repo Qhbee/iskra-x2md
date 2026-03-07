@@ -70,7 +70,7 @@ def _convert_footnotes_to_markdown(soup) -> str:
             a_hl = tag.find("a", class_="hl")
             if a_hl:
                 if current_note_id is not None and current_content:
-                    note_blocks.append((current_note_id, " ".join(current_content)))
+                    note_blocks.append((current_note_id, current_content))
                 mid = a_hl.get("id") or ""
                 mm = re.match(r"^id(\d+)a$", mid)
                 if mm:
@@ -88,7 +88,7 @@ def _convert_footnotes_to_markdown(soup) -> str:
                 current_content.append(tag.get_text(separator=" ", strip=True))
 
     if current_note_id is not None and current_content:
-        note_blocks.append((current_note_id, " ".join(current_content)))
+        note_blocks.append((current_note_id, current_content))
 
     # 4. 移除注释区（p.zs/p.zs1 已收集；移除「注　　释」标题行）
     for tag in div.find_all("p", class_=True):
@@ -101,11 +101,22 @@ def _convert_footnotes_to_markdown(soup) -> str:
             tag.decompose()
             break
 
-    # 5. 生成脚注块
+    # 5. 生成脚注块（多段时用缩进续行，保留分段）
+    def _indent_block(s):
+        """段落内若有换行，每行都缩进"""
+        return "\n".join("    " + line for line in s.split("\n"))
+
     lines = []
-    for nid, content in note_blocks:
-        if content:
-            lines.append(f"[^{nid}]: {content}")
+    for nid, paras in note_blocks:
+        if not paras:
+            continue
+        first = paras[0].strip()
+        rest = [p.strip() for p in paras[1:] if p.strip()]
+        if rest:
+            body = first + "\n\n" + "\n\n".join(_indent_block(p) for p in rest)
+        else:
+            body = first
+        lines.append(f"[^{nid}]: {body}")
     return "\n\n".join(lines) if lines else ""
 
 
