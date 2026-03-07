@@ -122,8 +122,24 @@ def parse_html_to_markdown(
     img_counter = 0
     img_placeholders = {}  # placeholder_id -> (img_filename, original_src)
 
+    image_sources = []
     for img in soup.find_all("img"):
         src = img.get("src")
+        if src:
+            image_sources.append((img, src))
+    for svg in soup.find_all("svg"):
+        img_el = svg.find("image")
+        if img_el:
+            src = img_el.get("href") or img_el.get("xlink:href")
+            if not src and img_el.attrs:
+                for k, v in img_el.attrs.items():
+                    if "href" in k.lower() and v:
+                        src = v
+                        break
+            if src:
+                image_sources.append((svg, src))
+
+    for tag, src in image_sources:
         if not src:
             continue
         resolved = _resolve_img_src(src, base_href)
@@ -146,13 +162,14 @@ def parse_html_to_markdown(
         try:
             img_path.write_bytes(raw)
         except Exception:
+            img_counter -= 1
             continue
 
         placeholder = f"__IMG_PLACEHOLDER_{img_counter}__"
         img_placeholders[placeholder] = (filename, src)
         new_tag = soup.new_tag("span")
         new_tag.string = placeholder
-        img.replace_with(new_tag)
+        tag.replace_with(new_tag)
 
     # 2. HTML -> Markdown
     body = soup.find("body")
