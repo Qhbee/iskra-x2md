@@ -462,6 +462,7 @@ def main():
             print(f"{indent}❌ 失败: {e}")
 
     # 生成目录页（方案 A：从 toc 或 spine 自动生成，链接到真实 md）
+    # 备选方案 B：目录由 gen_toc_from_output.py 后处理生成（扫描实际输出，夹逼/漏掉的文章都能正确反映）
     if contents_article_dir:
         toc_entries = _extract_toc_entries_ordered(book)
         if not toc_entries:
@@ -490,6 +491,7 @@ def main():
         final = "---\n" + yaml.dump(front_matter, allow_unicode=True) + "---\n\n" + body
         (contents_article_dir / "index.md").write_text(final, encoding="utf-8")
         print("\n📋 已生成目录")
+        print(f"💡 若发现漏项，可运行: python scripts/impl/mao/gen_toc_from_output.py {output_base}, 切换方案重新生成")
 
     print("\n✅ 全部转换完成！")
 
