@@ -82,6 +82,7 @@ def _extract_nav_hierarchy(book) -> dict:
     """
     从 toc 构建 href -> (title, category_path) 映射。
     toc 结构：Link(href, title)、Section(title, href)、(Section, [Link|Item|(Section,children)])
+    NCX 中父级 navPoint 也有 content src，需一并加入 href_map。
     """
     href_map = {}
 
@@ -89,8 +90,19 @@ def _extract_nav_hierarchy(book) -> dict:
         for entry in toc_entries or []:
             if isinstance(entry, (list, tuple)) and len(entry) >= 2:
                 section, children = entry[0], entry[1]
-                sect_title = getattr(section, "title", str(section))
-                walk(children, prefix + [clean_filename(str(sect_title))])
+                sect_title = str(getattr(section, "title", str(section)))
+                next_prefix = prefix + [clean_filename(sect_title)]
+                # 父级 navPoint 的 href（如 第一卷->Volume01.xhtml, Section01->第一次国内革命战争时期）
+                # 使用 next_prefix 作为 category，使 Section 写入 卷/时期/index.md 而非 卷/时期
+                for attr in ("href", "content", "file_name"):
+                    if hasattr(section, attr):
+                        val = getattr(section, attr)
+                        if val:
+                            href = (str(val) or "").split("#")[0].strip()
+                            if href:
+                                href_map[href] = (sect_title, "/".join(next_prefix))
+                            break
+                walk(children, next_prefix)
                 continue
             # Link: href, title
             if hasattr(entry, "href") and hasattr(entry, "title"):
@@ -109,6 +121,74 @@ def _extract_nav_hierarchy(book) -> dict:
     if isinstance(book.toc, (list, tuple)):
         walk(book.toc, [])
     return href_map
+
+
+def _common_category_prefix(cat_a: str, cat_b: str) -> str:
+    """两 category 的公共路径前缀，如 卷一/时期一 与 卷一/时期二 → 卷一"""
+    parts_a = (cat_a or "").split("/")
+    parts_b = (cat_b or "").split("/")
+    common = []
+    for pa, pb in zip(parts_a, parts_b):
+        if pa == pb:
+            common.append(pa)
+        else:
+            break
+    return "/".join(common)
+
+
+def _href_in_nav(href: str, nav_map: dict) -> bool:
+    """检查 href 是否在 toc/nav 中（支持多种路径格式）"""
+    if href in nav_map:
+        return True
+    # 尝试变体：OEBPS/Text/xxx、Text/xxx、xxx
+    base = href.split("/")[-1] if "/" in href else href
+    return any(h.endswith(base) or base in h for h in nav_map)
+
+
+def _reassign_root_category_to_volume(spine_docs: list, book_stem: str, nav_map: dict) -> None:
+    """
+    按 toc 处理 category：
+    1. spine 中第一个 toc 项之前的 → 根级（category=""）
+    2. 未在 toc 的项 → 向前找最近的在 toc 项，取其卷作为 category
+    """
+    # 找到 spine 中第一个出现在 toc 的项，其前的全部保留在根级
+    first_toc_idx = None
+    for i, d in enumerate(spine_docs):
+        if _href_in_nav(d.get("href", "") or "", nav_map):
+            first_toc_idx = i
+            break
+    root_indices = set(range(first_toc_idx)) if first_toc_idx is not None else set()
+
+    for i, d in enumerate(spine_docs):
+        if i in root_indices:
+            d["category"] = ""
+            continue
+        cat = d["category"] or ""
+        if not cat or cat == book_stem:
+            # 夹逼：前一个、后一个都在 toc 且同一目录 → 中间的被遗漏，放同一目录
+            prev_cat = None
+            if i > 0:
+                prev = spine_docs[i - 1]
+                if _href_in_nav(prev.get("href", "") or "", nav_map):
+                    prev_cat = prev.get("category") or ""
+            next_cat = None
+            if i < len(spine_docs) - 1:
+                nxt = spine_docs[i + 1]
+                if _href_in_nav(nxt.get("href", "") or "", nav_map):
+                    next_cat = nxt.get("category") or ""
+            if prev_cat and next_cat and prev_cat == next_cat:
+                d["category"] = prev_cat
+            elif prev_cat and next_cat:
+                # 前后不同目录（如 时期一/文章一 与 时期二/文章三 之间）：用公共前缀
+                # 如 卷一/时期一 与 卷一/时期二 → 卷一
+                common = _common_category_prefix(prev_cat, next_cat)
+                if common:
+                    d["category"] = common
+                else:
+                    d["category"] = prev_cat
+            elif prev_cat:
+                # 边界（卷首/卷尾）：仅前一个在 toc，用前一个的 category
+                d["category"] = prev_cat
 
 
 def main():
@@ -154,6 +234,10 @@ def main():
             "order": i + 1,
         })
 
+    # 将 category=毛泽东选集 的项按 spine 顺序分配到对应卷（消除根级「毛泽东选集」）
+    # toc 未覆盖的项会落入 book_stem；spine 中第一个 toc 项之前的自动保留在根级
+    _reassign_root_category_to_volume(spine_docs, book_stem, nav_map)
+
     print(f"🔍 有效章节: {len(spine_docs)} 个\n")
 
     if DRY_RUN:
@@ -162,6 +246,9 @@ def main():
         for d in spine_docs:
             cat_parts = [p for p in (d["category"] or "").split("/") if p]
             title = d["title"]
+            safe_title = clean_filename(title)
+            last_cat = clean_filename(cat_parts[-1]) if cat_parts else ""
+            is_section_index = bool(last_cat and last_cat == safe_title)
 
             # 输出未打印的 category 文件夹（📂）
             for i, part in enumerate(cat_parts):
@@ -170,9 +257,10 @@ def main():
                     print(f"{indent}📂 {part}")
                     category_stack = category_stack[:i] + [part]
 
-            # 输出文章（📄）
+            # 输出文章（📄）；section 与文件夹同名时显示为 index.md
             indent = "  " * len(cat_parts)
-            print(f"{indent}📄 {title}")
+            display_title = "index.md" if is_section_index else title
+            print(f"{indent}📄 {display_title}")
         print("\n📢 --- 侦察结束 ---")
         print("请检查上面的输出：")
         print("1. 标有 📂 的是你想要的分类文件夹吗？")
@@ -190,14 +278,20 @@ def main():
         category = d["category"]
         order = d["order"]
 
-        # 计算 Page Bundle 路径：output_base / category / safe_title
+        # 计算 Page Bundle 路径
         safe_title = clean_filename(title)
         cat_parts = [p for p in category.split("/") if p]
         if cat_parts:
             parent = output_base
             for part in cat_parts:
                 parent = parent / part
-            article_dir = parent / safe_title
+            # 当标题与 category 最后一级相同（如 Section02「第二次国内革命战争时期」），
+            # 写入 category/index.md，不创建重复子目录
+            last_cat = clean_filename(cat_parts[-1]) if cat_parts else ""
+            if last_cat and last_cat == safe_title:
+                article_dir = parent
+            else:
+                article_dir = parent / safe_title
         else:
             article_dir = output_base / safe_title
 
