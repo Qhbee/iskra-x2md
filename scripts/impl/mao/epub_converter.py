@@ -4,6 +4,12 @@ EPUB 转 Markdown：按 spine 顺序逐 HTML 转换，输出 Page Bundles（inde
 """
 
 import sys
+
+# Windows 控制台 UTF-8 输出，避免 UnicodeEncodeError
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+
 import ebooklib
 import yaml
 from pathlib import Path
