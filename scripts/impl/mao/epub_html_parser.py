@@ -228,6 +228,11 @@ def parse_html_to_markdown(
     # 0.5 标题层级归一：最高级提升为 h1，其余顺延（预处理，避免后处理多遍历）
     _normalize_heading_levels_in_soup(soup)
 
+    # 0.6 引用段落 p.a3（宣言、谈话等）、p.a31（引文悬挂，如问答）转为 blockquote
+    for p in soup.find_all("p", class_=lambda c: c and ("a3" in c or "a31" in c)):
+        bq = soup.new_tag("blockquote")
+        p.wrap(bq)
+
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
