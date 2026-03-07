@@ -3,6 +3,7 @@ EPUB 转 Markdown：按 spine 顺序逐 HTML 转换，输出 Page Bundles（inde
 与 pdf_converter_custom 输出格式一致。
 """
 
+import os
 import sys
 
 # Windows 控制台 UTF-8 输出，避免 UnicodeEncodeError
@@ -28,7 +29,7 @@ OUTPUT_DIR = PROJECT_ROOT / "data/processed/mao/毛泽东选集（1-7卷 静火�
 
 # True = 侦察模式（只看 spine 结构）
 # False = 执行模式（生成 Markdown）
-DRY_RUN = True
+DRY_RUN = False
 
 
 # ==================== 转换逻辑 ====================
@@ -158,6 +159,66 @@ def _extract_title_from_html(html_content: bytes) -> str | None:
     except Exception:
         pass
     return None
+
+
+def _normalize_href(href: str) -> str:
+    """归一化 href 用于映射查找"""
+    h = (href or "").split("#")[0].strip().replace("\\", "/")
+    while True:
+        before = h
+        for prefix in ("../", "./", "OEBPS/", "/"):
+            if h.startswith(prefix):
+                h = h[len(prefix):].lstrip("/")
+                break
+        if h == before:
+            break
+    return h
+
+
+def _resolve_href_to_path(href: str, href_to_dir: dict) -> Path | None:
+    """从 href 查找对应的 article_dir，支持多种格式"""
+    h = _normalize_href(href)
+    if h in href_to_dir:
+        return href_to_dir[h]
+    base = h.split("/")[-1] if "/" in h else h
+    for k, v in href_to_dir.items():
+        if k.endswith(base) or k == base:
+            return v
+    return None
+
+
+def _extract_toc_entries_ordered(book) -> list:
+    """从 toc 按顺序提取 (href, title, level)，用于生成目录"""
+    entries = []
+
+    def walk(toc_entries, level: int):
+        for entry in toc_entries or []:
+            if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+                section, children = entry[0], entry[1]
+                sect_title = str(getattr(section, "title", str(section)))
+                for attr in ("href", "content", "file_name"):
+                    if hasattr(section, attr):
+                        val = getattr(section, attr)
+                        if val:
+                            h = (str(val) or "").split("#")[0].strip()
+                            if h:
+                                entries.append((h, sect_title, level))
+                            break
+                walk(children, level + 1)
+                continue
+            if hasattr(entry, "href") and hasattr(entry, "title"):
+                h = (entry.href or "").split("#")[0].strip()
+                if h:
+                    entries.append((h, str(entry.title or "未命名"), level))
+                continue
+            if hasattr(entry, "get_name"):
+                h = (entry.get_name() or "").split("#")[0].strip()
+                if h:
+                    entries.append((h, str(getattr(entry, "title", "未命名")), level))
+
+    if isinstance(book.toc, (list, tuple)):
+        walk(book.toc, 0)
+    return entries
 
 
 def _href_in_nav(href: str, nav_map: dict) -> bool:
@@ -317,6 +378,10 @@ def main():
     article_idx_per_parent = {}
     # path_stack: category 前缀 -> 实际路径（含序号）。子项通过此表找到带序号的父目录
     path_stack = {"": output_base}
+    # href -> article_dir，用于最后生成目录
+    href_to_article_dir = {}
+    contents_article_dir = None  # 目录页路径，最后生成
+    contents_order = 4
     for d in spine_docs:
         item = d["item"]
         href = d["href"]
@@ -350,6 +415,9 @@ def main():
         article_dir.mkdir(parents=True, exist_ok=True)
         file_path = article_dir / "index.md"
 
+        # 记录 href -> article_dir，供生成目录
+        href_to_article_dir[_normalize_href(href)] = article_dir
+
         # 输出未打印的 category 文件夹（与 PDF 执行模式一致）
         for i, part in enumerate(cat_parts):
             if i >= len(category_stack) or category_stack[i] != part:
@@ -358,6 +426,13 @@ def main():
                 category_stack = category_stack[:i] + [part]
 
         indent = "  " * len(cat_parts)
+        is_contents = Path(href).stem == "Contents" or title == "目录"
+        if is_contents:
+            contents_article_dir = article_dir
+            contents_order = order
+            print(f"{indent}📋 目录页，稍后自动生成")
+            continue
+
         display_title = f"{title} (index.md)" if is_section_index else title
         print(f"{indent}🚀 转换「文章包」📦 : {display_title}")
 
@@ -385,6 +460,36 @@ def main():
 
         except Exception as e:
             print(f"{indent}❌ 失败: {e}")
+
+    # 生成目录页（方案 A：从 toc 或 spine 自动生成，链接到真实 md）
+    if contents_article_dir:
+        toc_entries = _extract_toc_entries_ordered(book)
+        if not toc_entries:
+            # ebooklib toc 可能为空或结构不同，回退到 spine 顺序 + category 层级
+            toc_entries = []
+            for d in spine_docs:
+                href = d.get("href", "")
+                if not href or Path(href).stem == "Contents":
+                    continue
+                title = d.get("title", "")
+                cat = (d.get("category") or "").strip()
+                level = len([p for p in cat.split("/") if p]) if cat else 0
+                toc_entries.append((href, title, level))
+        lines = ["# 目　录", ""]
+        for href, title, level in toc_entries:
+            art_dir = _resolve_href_to_path(href, href_to_article_dir)
+            if art_dir is None:
+                continue
+            # 04. 目录 与 05. 第一卷 为兄弟目录，用 relpath；空格编码为 %20 以防标题含空格，用 <> 包裹路径以便点击跳转
+            rel_raw = os.path.relpath(str(art_dir / "index.md"), str(contents_article_dir)).replace("\\", "/")
+            rel_str = rel_raw.replace(" ", "%20")
+            indent = "  " * level
+            lines.append(f"{indent}- [{title}]({rel_str})")
+        body = "\n".join(lines)
+        front_matter = {"title": "目录", "order": contents_order, "category": "", "book": book_stem}
+        final = "---\n" + yaml.dump(front_matter, allow_unicode=True) + "---\n\n" + body
+        (contents_article_dir / "index.md").write_text(final, encoding="utf-8")
+        print("\n📋 已生成目录")
 
     print("\n✅ 全部转换完成！")
 
