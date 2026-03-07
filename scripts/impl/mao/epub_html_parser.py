@@ -33,6 +33,82 @@ def _remove_scripts_styles(soup):
         tag.decompose()
 
 
+def _convert_footnotes_to_markdown(soup) -> str:
+    """
+    将毛选 EPUB 的注释格式转为 Markdown 脚注（与马列 PDF 输出一致）。
+    - 正文内 <a class="zy" href="#idNa">〔N〕</a> → [^N]
+    - 注释区 <p class="zs"><a class="hl" id="idNa">〔N〕</a>内容</p> → [^N]: 内容
+    - p.zs1 为上一注脚续行，拼接到上一段
+    """
+    # 1. 正文内：a.zy 替换为 [^N]
+    for a in soup.find_all("a", class_="zy"):
+        aid = a.get("id") or ""
+        m = re.match(r"^id(\d+)$", aid)
+        if m:
+            note_id = m.group(1)
+            ref = soup.new_string(f"[^{note_id}]")
+            a.replace_with(ref)
+
+    body = soup.find("body") or soup
+    div = body.find("div", class_="div") or body
+    if not hasattr(div, "find_all"):
+        return ""
+
+    # 3. 收集 p.zs / p.zs1，转为 [^N]: content（按文档顺序）
+    current_note_id = None
+    current_content = []
+    note_blocks = []
+
+    for tag in div.find_all("p", class_=True):
+        classes = tag.get("class", [])
+        is_zs = "zs" in classes and "zs1" not in classes
+        is_zs1 = "zs1" in classes
+        if not is_zs and not is_zs1:
+            continue
+
+        if is_zs:
+            a_hl = tag.find("a", class_="hl")
+            if a_hl:
+                if current_note_id is not None and current_content:
+                    note_blocks.append((current_note_id, " ".join(current_content)))
+                mid = a_hl.get("id") or ""
+                mm = re.match(r"^id(\d+)a$", mid)
+                if mm:
+                    current_note_id = mm.group(1)
+                    parts = []
+                    for s in a_hl.next_siblings:
+                        if hasattr(s, "get_text"):
+                            parts.append(s.get_text())
+                        elif isinstance(s, str):
+                            parts.append(s)
+                    content = " ".join(parts).strip()
+                    current_content = [content] if content else []
+        else:
+            if current_note_id is not None:
+                current_content.append(tag.get_text(separator=" ", strip=True))
+
+    if current_note_id is not None and current_content:
+        note_blocks.append((current_note_id, " ".join(current_content)))
+
+    # 4. 移除注释区（p.zs/p.zs1 已收集；移除「注　　释」标题行）
+    for tag in div.find_all("p", class_=True):
+        classes = tag.get("class", [])
+        if "zs" in classes or "zs1" in classes:
+            tag.decompose()
+    for tag in div.find_all("p"):
+        txt = tag.get_text(strip=True)
+        if txt and "注" in txt and "释" in txt and len(txt) < 15:
+            tag.decompose()
+            break
+
+    # 5. 生成脚注块
+    lines = []
+    for nid, content in note_blocks:
+        if content:
+            lines.append(f"[^{nid}]: {content}")
+    return "\n\n".join(lines) if lines else ""
+
+
 def _resolve_img_src(src: str, base_href: str) -> str:
     """
     将相对 src 解析为 EPUB 内的绝对路径（用于 get_item_with_href）。
@@ -116,6 +192,9 @@ def parse_html_to_markdown(
 
     _remove_scripts_styles(soup)
 
+    # 0. 注释转 Markdown 脚注（与马列格式一致），并移除注释区
+    footnote_block = _convert_footnotes_to_markdown(soup)
+
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
@@ -184,6 +263,10 @@ def parse_html_to_markdown(
 
     # 4. 后处理：段落内多余换行
     md_text = _postprocess_paragraph_breaks(md_text)
+
+    # 5. 追加脚注块（与马列 PDF 输出一致）
+    if footnote_block:
+        md_text = md_text.rstrip() + "\n\n" + footnote_block
 
     return md_text.strip()
 
