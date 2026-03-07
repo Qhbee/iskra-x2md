@@ -33,6 +33,25 @@ def _remove_scripts_styles(soup):
         tag.decompose()
 
 
+def _normalize_heading_levels_in_soup(soup):
+    """
+    预处理：最高级标题提升为 h1，其余顺延。
+    如文档最大是 h3 → h1，h4 → h2；若已是 h1 则不改。
+    """
+    body = soup.find("body") or soup
+    headings = body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
+    if not headings:
+        return
+    min_level = min(int(tag.name[1]) for tag in headings)
+    if min_level <= 1:
+        return
+    offset = min_level - 1
+    for tag in headings:
+        old_level = int(tag.name[1])
+        new_level = max(1, old_level - offset)
+        tag.name = f"h{new_level}"
+
+
 def _convert_footnotes_to_markdown(soup) -> str:
     """
     将毛选 EPUB 的注释格式转为 Markdown 脚注（与马列 PDF 输出一致）。
@@ -205,6 +224,9 @@ def parse_html_to_markdown(
 
     # 0. 注释转 Markdown 脚注（与马列格式一致），并移除注释区
     footnote_block = _convert_footnotes_to_markdown(soup)
+
+    # 0.5 标题层级归一：最高级提升为 h1，其余顺延（预处理，避免后处理多遍历）
+    _normalize_heading_levels_in_soup(soup)
 
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
