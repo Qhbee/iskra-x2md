@@ -16,6 +16,8 @@ from pathlib import Path
 
 from ebooklib import epub
 
+from bs4 import BeautifulSoup
+
 from epub_html_parser import clean_filename, parse_html_to_markdown
 
 # ==================== 仪表盘配置 ====================
@@ -145,6 +147,19 @@ _FRONT_MATTER_ZH = {
     "Contents": "目录"
 }
 
+def _extract_title_from_html(html_content: bytes) -> str | None:
+    """从 HTML 正文首个标题（h1-h6）解析，用于 toc 未收录的附录等。ebooklib item 无 title"""
+    try:
+        soup = BeautifulSoup(html_content, "html.parser")
+        for tag in soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
+            text = tag.get_text(strip=True)
+            if text:
+                return text
+    except Exception:
+        pass
+    return None
+
+
 def _href_in_nav(href: str, nav_map: dict) -> bool:
     """检查 href 是否在 toc/nav 中（支持多种路径格式）"""
     if href in nav_map:
@@ -234,6 +249,15 @@ def main():
         if not title:
             stem = Path(href).stem or f"章节_{i + 1}"
             title = _FRONT_MATTER_ZH.get(stem, stem)
+            # toc 未收录的附录等：从 HTML 正文首个标题解析（如 Section0419 → 附录：关于若干历史问题的决议）
+            if title == stem:
+                raw = item.get_content()
+                if raw:
+                    if isinstance(raw, str):
+                        raw = raw.encode("utf-8", errors="replace")
+                    html_title = _extract_title_from_html(raw)
+                    if html_title:
+                        title = html_title
         cat_info = nav_map.get(href, (title, ""))
         category = cat_info[1] or book_stem
         spine_docs.append({
