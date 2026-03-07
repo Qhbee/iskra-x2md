@@ -1,12 +1,12 @@
 """
-探测 ○ (U+25CB) 与 〇 (U+3007) 在毛选 EPUB 解压目录中的出现位置。
+探测 ○ (U+25CB) 与 〇 (U+3007) 在毛选解析 MD 目录中的出现位置。
 
 区别：
 - ○ U+25CB WHITE CIRCLE：几何符号，用于隐私遮蔽（如○○○）、列表标记
 - 〇 U+3007 IDEOGRAPHIC NUMBER ZERO：中文数字零，如二〇〇九年、一百〇八
 
 用法：python scripts/utils/probe_circle_zero.py [目录]
-默认扫描毛选 EPUB 解压目录
+默认扫描毛选解析 MD 目录
 """
 import sys
 from pathlib import Path
@@ -21,8 +21,14 @@ CIRCLE_25CB = "\u25cb"
 ZERO_3007 = "\u3007"
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_DIR = PROJECT_ROOT / "data/raw/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版"
-EXTENSIONS = {".md", ".html", ".htm", ".xhtml", ".txt"}
+DEFAULT_DIR = PROJECT_ROOT / "data/processed/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版"
+EXTENSIONS = {
+    # ".html",
+    # ".htm",
+    # ".xhtml",
+    # ".txt",
+    ".md"
+}
 
 
 def probe(base: Path):
