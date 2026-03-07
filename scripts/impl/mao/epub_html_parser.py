@@ -139,51 +139,6 @@ def _resolve_img_src(src: str, base_href: str) -> str:
     return "/".join(resolved)
 
 
-def _normalize_heading_levels(text: str) -> str:
-    """
-    最高级标题提升为 #，其余按相对层级顺延。
-    如文档最大是 ### → #，#### → ##；若已是 # 则不改。
-    """
-    lines = text.split("\n")
-    levels = []
-    in_fenced = False
-    for line in lines:
-        s = line.strip()
-        if s.startswith("```"):
-            in_fenced = not in_fenced
-            continue
-        if in_fenced:
-            continue
-        m = re.match(r"^(\s*)(#{1,6})\s+(.*)$", line)
-        if m:
-            levels.append(len(m.group(2)))
-
-    if not levels or min(levels) <= 1:
-        return text
-
-    offset = min(levels) - 1
-    result = []
-    in_fenced = False
-    for line in lines:
-        s = line.strip()
-        if s.startswith("```"):
-            in_fenced = not in_fenced
-            result.append(line)
-            continue
-        if in_fenced:
-            result.append(line)
-            continue
-        m = re.match(r"^(\s*)(#{1,6})\s+(.*)$", line)
-        if m:
-            prefix, hashes, content = m.group(1), m.group(2), m.group(3)
-            old_level = len(hashes)
-            new_level = max(1, old_level - offset)
-            result.append(prefix + "#" * new_level + " " + content)
-        else:
-            result.append(line)
-    return "\n".join(result)
-
-
 def _postprocess_paragraph_breaks(text: str) -> str:
     """
     后处理：段落内不插入多余换行。
@@ -319,9 +274,6 @@ def parse_html_to_markdown(
 
     # 4. 后处理：段落内多余换行
     md_text = _postprocess_paragraph_breaks(md_text)
-
-    # 4.5 标题层级归一：最高级提升为 #，其余顺延（卷/时期已是 # 或 ## 则不改）
-    md_text = _normalize_heading_levels(md_text)
 
     # 5. 追加脚注块（与马列 PDF 输出一致）
     if footnote_block:
