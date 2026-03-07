@@ -338,7 +338,7 @@ def main():
         key = str(parent)
         article_idx_per_parent[key] = article_idx_per_parent.get(key, 0) + 1
         idx = article_idx_per_parent[key]
-        numbered_name = f"{idx:02d}. {safe_title}"
+        numbered_name = f"{idx:02d}.{safe_title}"
 
         if cat_parts:
             article_dir = parent / numbered_name
