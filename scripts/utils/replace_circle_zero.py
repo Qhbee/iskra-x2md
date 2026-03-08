@@ -79,8 +79,10 @@ def run(base: Path, mode: str, dry_run: bool):
         new_text = replace_fn(orig)
         if new_text != orig:
             changed += 1
+            count = orig.count(CIRCLE_25CB) - new_text.count(CIRCLE_25CB)
             rel = path.relative_to(base) if base in path.parents or path.parent == base else path.name
-            print(f"  {'[dry] ' if dry_run else ''}{rel}")
+            suffix = f"  ({count} 处)" if count else ""
+            print(f"  {'[dry] ' if dry_run else ''}{rel}{suffix}")
             if not dry_run:
                 path.write_text(new_text, encoding="utf-8")
 
