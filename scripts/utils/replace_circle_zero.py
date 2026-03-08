@@ -5,6 +5,8 @@
 2. --safe（默认）：仅替换前或后邻接汉字数字的 ○，如一九○五、一九○○、一○七师
 
 用法：
+  直接运行：使用下方 DEFAULT_* 常量
+  命令行：  python replace_circle_zero.py [目录] [--all] [--dry]
   python scripts/utils/replace_circle_zero.py [目录]        # 保险模式
   python scripts/utils/replace_circle_zero.py [目录] --all  # 全部替换
   python scripts/utils/replace_circle_zero.py [目录] --dry  # 仅预览，不写入
@@ -22,6 +24,8 @@ NUM_CTX = set("一二三四五六七八九十〇" + CIRCLE_25CB)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_DIR = PROJECT_ROOT / "data/processed/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版"
+DEFAULT_MODE = "safe"  # "safe" 或 "all"
+DEFAULT_DRY = False
 EXTENSIONS = {
     # ".html", 
     # ".htm", 
@@ -92,8 +96,9 @@ def main():
     ap.add_argument("--all", action="store_true", help="全部替换")
     ap.add_argument("--dry", action="store_true", help="仅预览，不写入")
     args = ap.parse_args()
-    mode = "all" if args.all else "safe"
-    return run(Path(args.dir), mode, args.dry)
+    mode = "all" if args.all else DEFAULT_MODE
+    dry = args.dry or DEFAULT_DRY
+    return run(Path(args.dir), mode, dry)
 
 
 if __name__ == "__main__":
