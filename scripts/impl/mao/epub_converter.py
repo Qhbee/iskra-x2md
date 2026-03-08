@@ -24,6 +24,10 @@ from epub_html_parser import clean_filename, parse_html_to_markdown
 # ==================== 仪表盘配置 ====================
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from scripts.utils.replace_circle_zero import run as replace_circle_zero_run
+
 INPUT_EPUB = PROJECT_ROOT / "data/raw/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版.epub"
 OUTPUT_DIR = PROJECT_ROOT / "data/processed/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版"
 
@@ -492,6 +496,10 @@ def main():
         (contents_article_dir / "index.md").write_text(final, encoding="utf-8")
         print("\n📋 已生成目录")
         print(f"💡 若发现漏项，可运行: python scripts/impl/mao/gen_toc_from_output.py {output_base}, 切换方案重新生成")
+
+    # 圈为零替换（○ → 〇）
+    print("\n🔄 执行 ○ → 〇 替换...")
+    replace_circle_zero_run(output_base, "safe", dry_run=False)
 
     print("\n✅ 全部转换完成！")
 

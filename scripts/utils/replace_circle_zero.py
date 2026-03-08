@@ -15,10 +15,6 @@ import argparse
 import sys
 from pathlib import Path
 
-if sys.platform == "win32":
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-
 CIRCLE_25CB = "\u25cb"
 ZERO_3007 = "\u3007"
 # 汉字数字 + 〇 + ○（○ 用于一九○○ 等连续情况）
@@ -101,4 +97,7 @@ def main():
 
 
 if __name__ == "__main__":
+    if sys.platform == "win32":
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.exit(main())
