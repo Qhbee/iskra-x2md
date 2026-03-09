@@ -317,6 +317,13 @@ def parse_html_to_markdown(
             em.append(child.extract())
         p.append(em)
 
+    # 0.8 p.a2（右侧落款签名/日期）→ 斜体
+    for p in list(div.find_all("p", class_=lambda c: c and "a2" in c)):
+        em = soup.new_tag("em")
+        for child in list(p.children):
+            em.append(child.extract())
+        p.append(em)
+
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
