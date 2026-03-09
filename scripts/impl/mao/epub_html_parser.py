@@ -285,6 +285,12 @@ def parse_html_to_markdown(
     # 0.55 居中小标题：p.a5、p.a0+span.f3 → h1-h6，层级由前标题决定；h6 之后不转换、当正文
     _convert_centered_subheadings(soup)
 
+    # 0.56 标题内 br 直接移除（避免多余空格）
+    body = soup.find("body") or soup
+    for h in body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
+        for br in h.find_all("br"):
+            br.decompose()
+
     # 0.6 引用段落：p.a3 连续合并为一个 blockquote；p.a31 不合并，每个单独 blockquote（问/答独立）
     def _quote_type(tag):
         if tag.name != "p":
