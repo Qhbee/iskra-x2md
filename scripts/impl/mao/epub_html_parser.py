@@ -54,6 +54,48 @@ def _normalize_heading_levels_in_soup(soup):
         tag.name = f"h{new_level}"
 
 
+def _convert_centered_subheadings(soup):
+    """
+    将 p.a5 和 p.a0+span.f3 转为居中小标题（h1-h6）。
+    层级由前一个真实标题（h1-h6）决定；连续的 p.a5/p.a0+f3 同级（如第一、第二、第三…）。
+    若前一个已是 h6 则不转标题，当正文，改为加粗 ** ** 强调。
+    """
+    body = soup.find("body") or soup
+    div = body.find("div", class_="div") or body
+    if not hasattr(div, "find_all"):
+        return
+
+    last_heading_level = 0
+    for tag in list(div.find_all(True)):
+        if tag.name in ("h1", "h2", "h3", "h4", "h5", "h6"):
+            last_heading_level = int(tag.name[1])
+            continue
+        if tag.name != "p":
+            continue
+
+        classes = tag.get("class", []) or []
+        is_a5 = "a5" in classes
+        has_f3 = tag.find(class_=lambda c: c and "f3" in c) is not None
+        is_a0_f3 = "a0" in classes and has_f3
+
+        if not (is_a5 or is_a0_f3):
+            continue
+        if last_heading_level >= 6:
+            # h6 之后不转标题，改为加粗 ** ** 轻微强调
+            strong = soup.new_tag("strong")
+            for child in list(tag.children):
+                strong.append(child.extract())
+            tag.append(strong)
+            continue
+
+        level = last_heading_level + 1
+        h_tag = soup.new_tag(f"h{level}")
+        for child in list(tag.children):
+            h_tag.append(child.extract())
+        tag.replace_with(h_tag)
+        # 不更新 last_heading_level：连续的 p.a5/p.a0+f3 保持同级
+
+
 def _convert_footnotes_to_markdown(soup) -> str:
     """
     将毛选 EPUB 的注释格式转为 Markdown 脚注（与马列 PDF 输出一致）。
@@ -239,6 +281,9 @@ def parse_html_to_markdown(
 
     # 0.5 标题层级归一：最高级提升为 h1，其余顺延（预处理，避免后处理多遍历）
     _normalize_heading_levels_in_soup(soup)
+
+    # 0.55 居中小标题：p.a5、p.a0+span.f3 → h1-h6，层级由前标题决定；h6 之后不转换、当正文
+    _convert_centered_subheadings(soup)
 
     # 0.6 引用段落：p.a3 连续合并为一个 blockquote；p.a31 不合并，每个单独 blockquote（问/答独立）
     def _quote_type(tag):
