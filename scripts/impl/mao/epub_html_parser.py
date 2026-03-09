@@ -298,6 +298,25 @@ def parse_html_to_markdown(
             bq.append(new_p)
         p.replace_with(bq)
 
+    # 0.7 p.a0 + span.f2（日期/副标题）→ 斜体
+    # 三种情况
+    # --- OEBPS/Text/Section0647.xhtml ---
+    #     15 | <p class="a0"><span class="f2">（一九五五年九月、十二月）</span></p>
+    #     19 | <p class="a0"><span class="f2 t61">（一九五五年九月二十五日）</span></p>
+    # --- OEBPS/Text/Section0215.xhtml ---
+    #     15 | <p class="a0"><span class="f2 t63">论认识和实践的关系<br/>——知和行的关系</span></p>
+    #     17 | <p class="a0"><span class="f2">（一九三七年七月）</span></p>
+    # t63 是真副标题，也 * * 斜体
+    # t61 是序、跋这种二级标题的小号字日期，也 * * 斜体
+    # 不管 span.t63, span.t61，只要 p.a0 + span.f2 就  * * 斜体
+    for p in list(div.find_all("p", class_=lambda c: c and "a0" in c)):
+        if p.find(class_=lambda c: c and "f2" in c) is None:
+            continue
+        em = soup.new_tag("em")
+        for child in list(p.children):
+            em.append(child.extract())
+        p.append(em)
+
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
