@@ -569,8 +569,7 @@
     <item id="Chapter0018.xhtml" href="OEBPS/Text/Chapter0018.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter0019.xhtml" href="OEBPS/Text/Chapter0019.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter0020.xhtml" href="OEBPS/Text/Chapter0020.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Chapter0021.xhtml2" href="OEBPS/Text/Chapter0021_split_000.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Chapter0021.xhtml1" href="OEBPS/Text/Chapter0021_split_001.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter0021.xhtml" href="OEBPS/Text/Chapter0021.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter0022.xhtml" href="OEBPS/Text/Chapter0022.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter0023.xhtml" href="OEBPS/Text/Chapter0023.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter0024.xhtml" href="OEBPS/Text/Chapter0024.xhtml" media-type="application/xhtml+xml"/>
@@ -1232,8 +1231,7 @@
     <itemref idref="Chapter0018.xhtml"/>
     <itemref idref="Chapter0019.xhtml"/>
     <itemref idref="Chapter0020.xhtml"/>
-    <itemref idref="Chapter0021.xhtml2"/>
-    <itemref idref="Chapter0021.xhtml1"/>
+    <itemref idref="Chapter0021.xhtml"/>
     <itemref idref="Chapter0022.xhtml"/>
     <itemref idref="Chapter0023.xhtml"/>
     <itemref idref="Chapter0024.xhtml"/>

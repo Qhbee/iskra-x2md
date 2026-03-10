@@ -3317,9 +3317,9 @@
         </navPoint>
         <navPoint id="navPoint-552" playOrder="552" class="chapter">
           <navLabel>
-            <text>中共中央关于无产阶级文化大革命的决定</text>
+            <text>附录：中共中央关于无产阶级文化大革命的决定</text>
           </navLabel>
-          <content src="OEBPS/Text/Chapter0021_split_000.xhtml"/>
+          <content src="OEBPS/Text/Chapter0021.xhtml"/>
         </navPoint>
         <navPoint id="navPoint-553" playOrder="553" class="chapter">
           <navLabel>
