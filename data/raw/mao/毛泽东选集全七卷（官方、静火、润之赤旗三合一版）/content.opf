@@ -1,7 +1,7 @@
 <?xml version="1.0"  encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uuid_id">
   <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:calibre="http://calibre.kovidgoyal.net/2009/metadata">
-    <dc:title>毛泽东选集全七卷(官方、静火、润之赤旗三合一版)</dc:title>
+    <dc:title>毛泽东选集全七卷（官方、静火、润之赤旗三合一版）</dc:title>
     <dc:creator opf:role="aut" opf:file-as="毛泽东">毛泽东</dc:creator>
     <dc:contributor opf:role="bkp">calibre (7.16.0) [https://calibre-ebook.com]</dc:contributor>
     <dc:date>2020-02-01T16:00:00+00:00</dc:date>
@@ -10,7 +10,7 @@
     <dc:publisher>滴水出版社</dc:publisher>
     <dc:language>zh</dc:language>
     <dc:identifier opf:scheme="calibre">723c211b-e926-4669-8074-0b57c7bcb79e</dc:identifier>
-    <meta name="calibre:title_sort" content="毛泽东选集全七卷(官方、静火、润之赤旗三合一版)"/>
+    <meta name="calibre:title_sort" content="毛泽东选集全七卷（官方、静火、润之赤旗三合一版）"/>
     <meta name="calibre:timestamp" content="2024-10-10T06:43:35.911334+00:00"/>
     <meta name="cover" content="cover"/>
   </metadata>
