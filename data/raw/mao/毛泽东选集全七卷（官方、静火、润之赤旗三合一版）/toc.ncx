@@ -2501,7 +2501,7 @@
         </navPoint>
         <navPoint id="navPoint-416" playOrder="416" class="chapter">
           <navLabel>
-            <text>在杭州会议上的讲话提纲</text>
+            <text>在杭州会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0902.xhtml"/>
         </navPoint>
