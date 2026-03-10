@@ -1,0 +1,449 @@
+.calibre {
+  display: block;
+  font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
+  font-size: 1em;
+  line-height: 130%;
+  text-align: justify;
+  margin: 0 5pt;
+  padding: 0% 0;
+}
+.calibre1 {
+  display: none;
+  font-size: 2em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin: 0.67em 0;
+}
+.calibre2 {
+  color: #951b2a;
+  display: block;
+  duokan-text-indent: 0;
+  font-family: maozedong;
+  font-size: 2em;
+  line-height: 130%;
+  text-align: center;
+  text-indent: 0;
+  margin: 65% auto auto;
+}
+.calibre3 {
+  display: block;
+}
+.calibre4 {
+  height: auto;
+  width: 100%;
+}
+.calibre5 {
+  height: auto;
+  width: auto;
+}
+.calibre6 {
+  font-family: fzqkbysjt;
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.calibre7 {
+  font-size: 1em;
+  line-height: 1.2;
+  vertical-align: super;
+}
+.calibre8 {
+  height: 0.96em;
+  padding-top: 0.5em;
+  vertical-align: middle;
+  width: 0.96em;
+  margin: 0;
+}
+.calibre9 {
+  color: #951b2a;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-size: 0.77419em;
+  font-weight: bold;
+}
+.calibre10 {
+  display: block;
+  font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 2em;
+}
+.calibre11 {
+  font-size: 0.75em;
+  line-height: normal;
+  vertical-align: super;
+}
+.calibre12 {
+  color: #951b2a;
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-size: 1.29167em;
+  font-weight: bold;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 0;
+}
+.calibre13 {
+  color: #951b2a;
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+  font-size: 1.29167em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 0;
+}
+.calibre14 {
+  color: #000;
+  display: block;
+  duokan-text-indent: 2em;
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+  font-size: 1em;
+  line-height: 1.4em;
+  text-align: justify;
+  text-indent: 2em;
+  text-justify: inter-ideograph;
+  word-break: break-all;
+  margin: 0.35em 0;
+}
+.calibre15 {
+  color: #000;
+  display: block;
+  duokan-text-indent: 2em;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-size: 1em;
+  line-height: 1.4em;
+  text-align: justify;
+  text-indent: 2em;
+  text-justify: inter-ideograph;
+  word-break: break-all;
+  margin: 0.35em 0;
+}
+.calibre16 {
+  color: #951b2a;
+  duokan-text-indent: 0;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-size: 0.64516em;
+  font-weight: bold;
+  line-height: 130%;
+  margin-left: 1%;
+  margin-right: 1%;
+  text-align: center;
+  text-indent: 0;
+}
+.calibre17 {
+  color: #951b2a;
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 0;
+}
+.calibre18 {
+  display: table-row-group;
+  vertical-align: middle;
+}
+.calibre19 {
+  display: table-row;
+  vertical-align: inherit;
+}
+.calibre20 {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0.25em;
+  border-top: #000 solid 1px;
+  border-left: #000 solid 1px;
+}
+.calibre21 {
+  display: table-footer-group;
+  vertical-align: middle;
+}
+.calibre22 {
+  font-size: 1em;
+  line-height: 1.5;
+  text-indent: 2em;
+}
+.calibre23 {
+  font-size: 1em;
+  line-height: normal;
+  vertical-align: super;
+}
+.calibre24 {
+  font-weight: bold;
+}
+.calibre25 {
+  display: block;
+  font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 2em;
+}
+.calibre26 {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-size: 1.29167em;
+  font-weight: bold;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 0;
+}
+.collaspe {
+  border-collapse: separate;
+  border-collaspe: collaspe;
+  border-spacing: 2px;
+  display: table;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  text-align: center;
+  text-indent: 0;
+  width: 100%;
+  margin: 0.5em auto;
+  border-top: #000 solid 1px;
+  border-right: #000 solid 2px;
+  border-bottom: #000 solid 2px;
+  border-left: #000 solid 1px;
+}
+.duokan-footnote {
+  color: black;
+  text-decoration: none;
+}
+.duokan-footnote-content {
+  display: block;
+  list-style-position: outside;
+  list-style-type: none;
+  margin-bottom: 1em;
+  margin-right: 0;
+  margin-top: 1em;
+  padding-bottom: 0;
+  padding-right: 0;
+  padding-top: 0;
+  text-align: justify;
+}
+.duokan-footnote-item {
+  display: list-item;
+}
+.epigraph {
+  display: block;
+  font-family: "zw";
+  line-height: 130%;
+  text-align: justify;
+  margin: 0;
+  padding: 0;
+}
+.footnote {
+  display: block;
+  font-family: "kaiti";
+  font-size: 1em;
+  line-height: 1.6;
+  text-align: justify;
+  text-indent: -1em;
+  margin: 0;
+}
+.head {
+  display: block;
+  font-family: FZMHJW;
+  font-size: 1.29167em;
+  font-weight: bold;
+  line-height: 1.2;
+  text-align: center;
+  margin: -8em 4% 4em;
+  padding: 11em 2px 2px 0;
+}
+.head-mzd {
+  color: #951b2a;
+  display: block;
+  font-family: fzqkbysjt;
+  font-size: 1.29167em;
+  font-weight: bold;
+  line-height: 140%;
+  text-align: center;
+  margin: -8em 4% 4em;
+  padding: 11em 2px 2px 0;
+}
+.houjimowei {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 0;
+}
+.mzd-cf-kt {
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-weight: bold;
+}
+.mzd-shici-kt {
+  display: block;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 2em;
+}
+.mzd-shici-tm-kt {
+  display: block;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-weight: bold;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: center;
+  text-indent: 2em;
+}
+.mzd-waishi-kt {
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+}
+.mzd-xw-kt {
+  display: block;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 2em;
+}
+.mzd-xw-kt1 {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-size: 1.66667em;
+  line-height: 1.2;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 0;
+}
+.picture {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "zw";
+  line-height: 130%;
+  text-align: center;
+  text-indent: 0;
+  margin: 1.5em 0;
+  padding: 0;
+}
+.post {
+  display: block;
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 2em;
+}
+.post1 {
+  display: none;
+  font-size: 1.66667em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin: 0.83em 0;
+}
+.post2 {
+  color: #951b2a;
+  display: block;
+  duokan-text-indent: 0;
+  font-family: fzqkbysjt;
+  font-size: 1.66667em;
+  font-weight: bold;
+  line-height: 1.2;
+  text-align: justify;
+  text-indent: 0;
+  width: 1em;
+  margin: 2em auto;
+  padding: 6px 3px;
+}
+.post3 {
+  color: #951b2a;
+  display: block;
+  duokan-text-indent: 0;
+  font-family: fzqkbysjt;
+  font-size: 1.66667em;
+  font-weight: bold;
+  line-height: 1.2;
+  text-align: center;
+  text-indent: 0;
+  width: 3em;
+  margin: 2em auto;
+  padding: 6px 3px;
+}
+.sign {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  line-height: 130%;
+  text-align: right;
+  text-indent: 0;
+  margin: 1em 0 0 auto;
+}
+.tepi {
+  color: #951b2a;
+  font-weight: bold;
+}
+.underline {
+  color: #951b2a;
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  line-height: 130%;
+  margin-left: 1%;
+  margin-right: 1%;
+}
+.underline1 {
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+  font-weight: bold;
+}
+.underline2 {
+  font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
+  font-weight: bold;
+  line-height: 130%;
+  margin-left: 1%;
+  margin-right: 1%;
+}
+.xinjian-fs {
+  display: block;
+  font-family: "zw";
+  line-height: 130%;
+  text-align: justify;
+  margin: 0.75em 0 0.75em 2em;
+  padding: 0;
+}
+.xinjianmowei {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 0;
+}
+.xinjianqishi {
+  display: block;
+  duokan-text-indent: 0;
+  font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
+  font-weight: bold;
+  line-height: 130%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  text-align: justify;
+  text-indent: 0;
+}
