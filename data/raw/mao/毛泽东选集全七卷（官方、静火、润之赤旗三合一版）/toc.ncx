@@ -623,7 +623,7 @@
         <content src="OEBPS/Text/Section05.xhtml"/>
         <navPoint id="navPoint-103" playOrder="103" class="chapter">
           <navLabel>
-            <text>抗日战争胜利后的时局 和我们的方针</text>
+            <text>抗日战争胜利后的时局和我们的方针</text>
           </navLabel>
           <content src="OEBPS/Text/Section0501.xhtml"/>
         </navPoint>
@@ -791,7 +791,7 @@
         </navPoint>
         <navPoint id="navPoint-131" playOrder="131" class="chapter">
           <navLabel>
-            <text>纠正土地改革宣传中的 “左”倾错误</text>
+            <text>纠正土地改革宣传中的“左”倾错误</text>
           </navLabel>
           <content src="OEBPS/Text/Section0529.xhtml"/>
         </navPoint>
@@ -851,7 +851,7 @@
         </navPoint>
         <navPoint id="navPoint-141" playOrder="141" class="chapter">
           <navLabel>
-            <text>一九四八年的 土地改革工作和整党工作</text>
+            <text>一九四八年的土地改革工作和整党工作</text>
           </navLabel>
           <content src="OEBPS/Text/Section0539.xhtml"/>
         </navPoint>
@@ -1127,7 +1127,7 @@
         </navPoint>
         <navPoint id="navPoint-187" playOrder="187" class="chapter">
           <navLabel>
-            <text>中共中央政治局 扩大会议决议要点</text>
+            <text>中共中央政治局扩大会议决议要点</text>
           </navLabel>
           <content src="OEBPS/Text/Section0612.xhtml"/>
         </navPoint>
@@ -1217,7 +1217,7 @@
         </navPoint>
         <navPoint id="navPoint-202" playOrder="202" class="chapter">
           <navLabel>
-            <text>对刘少奇、杨尚昆破坏纪律擅自 以中央名义发出文件的批评</text>
+            <text>对刘少奇、杨尚昆破坏纪律擅自以中央名义发出文件的批评</text>
           </navLabel>
           <content src="OEBPS/Text/Section0627.xhtml"/>
         </navPoint>
@@ -1337,13 +1337,13 @@
         </navPoint>
         <navPoint id="navPoint-222" playOrder="222" class="chapter">
           <navLabel>
-            <text>《中国农村的社会主义高潮》 的序言</text>
+            <text>《中国农村的社会主义高潮》的序言</text>
           </navLabel>
           <content src="OEBPS/Text/Section0647.xhtml"/>
         </navPoint>
         <navPoint id="navPoint-223" playOrder="223" class="chapter">
           <navLabel>
-            <text>《中国农村的社会主义高潮》 的按语</text>
+            <text>《中国农村的社会主义高潮》的按语</text>
           </navLabel>
           <content src="OEBPS/Text/Section0648.xhtml"/>
         </navPoint>
@@ -2165,7 +2165,7 @@
         </navPoint>
         <navPoint id="navPoint-360" playOrder="360" class="chapter">
           <navLabel>
-            <text>中央军委 关于支左工作十条命令</text>
+            <text>中央军委关于支左工作十条命令</text>
           </navLabel>
           <content src="OEBPS/Text/Section0832.xhtml"/>
         </navPoint>
@@ -2231,7 +2231,7 @@
         </navPoint>
         <navPoint id="navPoint-371" playOrder="371" class="chapter">
           <navLabel>
-            <text>接见首都红代会 “五大领袖”时的谈话</text>
+            <text>接见首都红代会“五大领袖”时的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0843.xhtml"/>
         </navPoint>
@@ -2363,7 +2363,7 @@
         </navPoint>
         <navPoint id="navPoint-393" playOrder="393" class="chapter">
           <navLabel>
-            <text>中美联合公报（“上海公报”） 中国方面的声明</text>
+            <text>中美联合公报（“上海公报”）中国方面的声明</text>
           </navLabel>
           <content src="OEBPS/Text/Section0865.xhtml"/>
         </navPoint>
@@ -3515,7 +3515,7 @@
         </navPoint>
         <navPoint id="navPoint-585" playOrder="585" class="chapter">
           <navLabel>
-            <text>接见首都红代会 “五大领袖”时的谈话</text>
+            <text>接见首都红代会“五大领袖”时的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section1149.xhtml"/>
         </navPoint>
