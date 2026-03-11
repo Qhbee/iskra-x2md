@@ -431,6 +431,7 @@
     <item id="Section0883.xhtml" href="OEBPS/Text/Section0883.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume08.xhtml" href="OEBPS/Text/Volume08.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface08.xhtml" href="OEBPS/Text/Preface08.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Preface08-2.xhtml" href="OEBPS/Text/Preface08-2.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter09.xhtml" href="OEBPS/Text/Chapter09.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0901.xhtml" href="OEBPS/Text/Section0901.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0902.xhtml" href="OEBPS/Text/Section0902.xhtml" media-type="application/xhtml+xml"/>
@@ -544,7 +545,6 @@
     <item id="Section09110.xhtml" href="OEBPS/Text/Section09110.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section09111.xhtml" href="OEBPS/Text/Section09111.xhtml" media-type="application/xhtml+xml"/>
     <item id="Afterword01.xhtml" href="OEBPS/Text/Afterword01.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section09113.xhtml" href="OEBPS/Text/Section09113.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume09.xhtml" href="OEBPS/Text/Volume09.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface09.xhtml" href="OEBPS/Text/Preface09.xhtml" media-type="application/xhtml+xml"/>
     <item id="Chapter10.xhtml" href="OEBPS/Text/Chapter10.xhtml" media-type="application/xhtml+xml"/>
@@ -1093,6 +1093,7 @@
     <itemref idref="Section0883.xhtml"/>
     <itemref idref="Volume08.xhtml"/>
     <itemref idref="Preface08.xhtml"/>
+    <itemref idref="Preface08-2.xhtml"/>
     <itemref idref="Chapter09.xhtml"/>
     <itemref idref="Section0901.xhtml"/>
     <itemref idref="Section0902.xhtml"/>
@@ -1206,7 +1207,6 @@
     <itemref idref="Section09110.xhtml"/>
     <itemref idref="Section09111.xhtml"/>
     <itemref idref="Afterword01.xhtml"/>
-    <itemref idref="Section09113.xhtml"/>
     <itemref idref="Volume09.xhtml"/>
     <itemref idref="Preface09.xhtml"/>
     <itemref idref="Chapter10.xhtml"/>

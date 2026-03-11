@@ -2490,687 +2490,687 @@
       </navPoint>
       <navPoint id="navPoint-414" playOrder="414" class="chapter">
         <navLabel>
+          <text>再版说明</text>
+        </navLabel>
+        <content src="OEBPS/Text/Preface08-2.xhtml"/>
+      </navPoint>
+      <navPoint id="navPoint-415" playOrder="415" class="chapter">
+        <navLabel>
           <text>社会主义革命和社会主义建设时期（中）</text>
         </navLabel>
         <content src="OEBPS/Text/Chapter09.xhtml"/>
-        <navPoint id="navPoint-415" playOrder="415" class="chapter">
+        <navPoint id="navPoint-416" playOrder="416" class="chapter">
           <navLabel>
             <text>在杭州会议上的讲话提纲</text>
           </navLabel>
           <content src="OEBPS/Text/Section0901.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-416" playOrder="416" class="chapter">
+        <navPoint id="navPoint-417" playOrder="417" class="chapter">
           <navLabel>
             <text>在杭州会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0902.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-417" playOrder="417" class="chapter">
+        <navPoint id="navPoint-418" playOrder="418" class="chapter">
           <navLabel>
             <text>关于国内各项政策和国际问题的短篇指示汇编</text>
           </navLabel>
           <content src="OEBPS/Text/Section0903.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-418" playOrder="418" class="chapter">
+        <navPoint id="navPoint-419" playOrder="419" class="chapter">
           <navLabel>
             <text>在南宁会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0904.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-419" playOrder="419" class="chapter">
+        <navPoint id="navPoint-420" playOrder="420" class="chapter">
           <navLabel>
             <text>给刘建勋、韦国清的信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0905.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-420" playOrder="420" class="chapter">
+        <navPoint id="navPoint-421" playOrder="421" class="chapter">
           <navLabel>
             <text>在南宁会议上的结论提纲</text>
           </navLabel>
           <content src="OEBPS/Text/Section0906.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-421" playOrder="421" class="chapter">
+        <navPoint id="navPoint-422" playOrder="422" class="chapter">
           <navLabel>
             <text>关于志愿军撤出朝鲜问题</text>
           </navLabel>
           <content src="OEBPS/Text/Section0907.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-422" playOrder="422" class="chapter">
+        <navPoint id="navPoint-423" playOrder="423" class="chapter">
           <navLabel>
             <text>在最高国务会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0908.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-423" playOrder="423" class="chapter">
+        <navPoint id="navPoint-424" playOrder="424" class="chapter">
           <navLabel>
             <text>工作方法六十条（草案）</text>
           </navLabel>
           <content src="OEBPS/Text/Section0909.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-424" playOrder="424" class="chapter">
+        <navPoint id="navPoint-425" playOrder="425" class="chapter">
           <navLabel>
             <text>对周扬《文艺战线上的一场大辩论》的修改</text>
           </navLabel>
           <content src="OEBPS/Text/Section0910.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-425" playOrder="425" class="chapter">
+        <navPoint id="navPoint-426" playOrder="426" class="chapter">
           <navLabel>
             <text>在成都会议上的讲话、插话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0911.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-426" playOrder="426" class="chapter">
+        <navPoint id="navPoint-427" playOrder="427" class="chapter">
           <navLabel>
             <text>一批按语</text>
           </navLabel>
           <content src="OEBPS/Text/Section0912.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-427" playOrder="427" class="chapter">
+        <navPoint id="navPoint-428" playOrder="428" class="chapter">
           <navLabel>
             <text>在汉口会议上的讲话、插话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0913.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-428" playOrder="428" class="chapter">
+        <navPoint id="navPoint-429" playOrder="429" class="chapter">
           <navLabel>
             <text>介绍一个合作社</text>
           </navLabel>
           <content src="OEBPS/Text/Section0914.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-429" playOrder="429" class="chapter">
+        <navPoint id="navPoint-430" playOrder="430" class="chapter">
           <navLabel>
             <text>临时通信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0915.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-430" playOrder="430" class="chapter">
+        <navPoint id="navPoint-431" playOrder="431" class="chapter">
           <navLabel>
             <text>在中国共产党第八次全国代表大会第二次会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0916.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-431" playOrder="431" class="chapter">
+        <navPoint id="navPoint-432" playOrder="432" class="chapter">
           <navLabel>
             <text>给张闻天的信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0917.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-432" playOrder="432" class="chapter">
+        <navPoint id="navPoint-433" playOrder="433" class="chapter">
           <navLabel>
             <text>毒草是要锄掉的</text>
           </navLabel>
           <content src="OEBPS/Text/Section0918.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-433" playOrder="433" class="chapter">
+        <navPoint id="navPoint-434" playOrder="434" class="chapter">
           <navLabel>
             <text>在八大二次会议代表团团长会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0919.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-434" playOrder="434" class="chapter">
+        <navPoint id="navPoint-435" playOrder="435" class="chapter">
           <navLabel>
             <text>卑贱者最聪明，高贵者最愚蠢</text>
           </navLabel>
           <content src="OEBPS/Text/Section0920.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-435" playOrder="435" class="chapter">
+        <navPoint id="navPoint-436" playOrder="436" class="chapter">
           <navLabel>
             <text>在军委扩大会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0921.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-436" playOrder="436" class="chapter">
+        <navPoint id="navPoint-437" playOrder="437" class="chapter">
           <navLabel>
             <text>介绍一封信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0922.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-437" playOrder="437" class="chapter">
+        <navPoint id="navPoint-438" playOrder="438" class="chapter">
           <navLabel>
             <text>同黑非洲青年代表团的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0923.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-438" playOrder="438" class="chapter">
+        <navPoint id="navPoint-439" playOrder="439" class="chapter">
           <navLabel>
             <text>同苏联驻华大使尤金的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0924.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-439" playOrder="439" class="chapter">
+        <navPoint id="navPoint-440" playOrder="440" class="chapter">
           <navLabel>
             <text>把握打金门的时机</text>
           </navLabel>
           <content src="OEBPS/Text/Section0925.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-440" playOrder="440" class="chapter">
+        <navPoint id="navPoint-441" playOrder="441" class="chapter">
           <navLabel>
             <text>对陆定一《教育必须与生产劳动相结合》的修改</text>
           </navLabel>
           <content src="OEBPS/Text/Section0926.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-441" playOrder="441" class="chapter">
+        <navPoint id="navPoint-442" playOrder="442" class="chapter">
           <navLabel>
             <text>同赫鲁晓夫的谈话纪要</text>
           </navLabel>
           <content src="OEBPS/Text/Section0927.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-442" playOrder="442" class="chapter">
+        <navPoint id="navPoint-443" playOrder="443" class="chapter">
           <navLabel>
             <text>在北戴河政治局扩大会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0928.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-443" playOrder="443" class="chapter">
+        <navPoint id="navPoint-444" playOrder="444" class="chapter">
           <navLabel>
             <text>不要忙于改集体所有制为全民所有制</text>
           </navLabel>
           <content src="OEBPS/Text/Section0929.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-444" playOrder="444" class="chapter">
+        <navPoint id="navPoint-445" playOrder="445" class="chapter">
           <navLabel>
             <text>在最高国务会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0930.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-445" playOrder="445" class="chapter">
+        <navPoint id="navPoint-446" playOrder="446" class="chapter">
           <navLabel>
             <text>外交斗争必须高屋建瓴势如破竹</text>
           </navLabel>
           <content src="OEBPS/Text/Section0931.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-446" playOrder="446" class="chapter">
+        <navPoint id="navPoint-447" playOrder="447" class="chapter">
           <navLabel>
             <text>巡视长江流域数省后向新华社记者发表的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0932.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-447" playOrder="447" class="chapter">
+        <navPoint id="navPoint-448" playOrder="448" class="chapter">
           <navLabel>
             <text>在接见社会主义六国代表团时的谈话纪要</text>
           </navLabel>
           <content src="OEBPS/Text/Section0933.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-448" playOrder="448" class="chapter">
+        <navPoint id="navPoint-449" playOrder="449" class="chapter">
           <navLabel>
             <text>告台湾同胞书</text>
           </navLabel>
           <content src="OEBPS/Text/Section0934.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-449" playOrder="449" class="chapter">
+        <navPoint id="navPoint-450" playOrder="450" class="chapter">
           <navLabel>
             <text>中国医药学是一个伟大的宝库</text>
           </navLabel>
           <content src="OEBPS/Text/Section0935.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-450" playOrder="450" class="chapter">
+        <navPoint id="navPoint-451" playOrder="451" class="chapter">
           <navLabel>
             <text>中华人民共和国国防部命令</text>
           </navLabel>
           <content src="OEBPS/Text/Section0936.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-451" playOrder="451" class="chapter">
+        <navPoint id="navPoint-452" playOrder="452" class="chapter">
           <navLabel>
             <text>再告台湾同胞书</text>
           </navLabel>
           <content src="OEBPS/Text/Section0937.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-452" playOrder="452" class="chapter">
+        <navPoint id="navPoint-453" playOrder="453" class="chapter">
           <navLabel>
             <text>给周世钊的信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0938.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-453" playOrder="453" class="chapter">
+        <navPoint id="navPoint-454" playOrder="454" class="chapter">
           <navLabel>
             <text>在第一次郑州会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0939.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-454" playOrder="454" class="chapter">
+        <navPoint id="navPoint-455" playOrder="455" class="chapter">
           <navLabel>
             <text>关于读书的建议</text>
           </navLabel>
           <content src="OEBPS/Text/Section0940.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-455" playOrder="455" class="chapter">
+        <navPoint id="navPoint-456" playOrder="456" class="chapter">
           <navLabel>
             <text>读《苏联社会主义经济问题》谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0941.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-456" playOrder="456" class="chapter">
+        <navPoint id="navPoint-457" playOrder="457" class="chapter">
           <navLabel>
             <text>在武昌会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0942.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-457" playOrder="457" class="chapter">
+        <navPoint id="navPoint-458" playOrder="458" class="chapter">
           <navLabel>
             <text>记者头脑要冷静</text>
           </navLabel>
           <content src="OEBPS/Text/Section0943.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-458" playOrder="458" class="chapter">
+        <navPoint id="navPoint-459" playOrder="459" class="chapter">
           <navLabel>
             <text>一个教训</text>
           </navLabel>
           <content src="OEBPS/Text/Section0944.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-459" playOrder="459" class="chapter">
+        <navPoint id="navPoint-460" playOrder="460" class="chapter">
           <navLabel>
             <text>关于帝国主义和一切反动派是不是真老虎的问题</text>
           </navLabel>
           <content src="OEBPS/Text/Section0945.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-460" playOrder="460" class="chapter">
+        <navPoint id="navPoint-461" playOrder="461" class="chapter">
           <navLabel>
             <text>在中国共产党第八届中央委员会第六次全体会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0946.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-461" playOrder="461" class="chapter">
+        <navPoint id="navPoint-462" playOrder="462" class="chapter">
           <navLabel>
             <text>对《张鲁传》的批注</text>
           </navLabel>
           <content src="OEBPS/Text/Section0947.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-462" playOrder="462" class="chapter">
+        <navPoint id="navPoint-463" playOrder="463" class="chapter">
           <navLabel>
             <text>对《毛主席诗词十九首》的批注</text>
           </navLabel>
           <content src="OEBPS/Text/Section0948.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-463" playOrder="463" class="chapter">
+        <navPoint id="navPoint-464" playOrder="464" class="chapter">
           <navLabel>
             <text>接见参加全军政工会议的各军区负责同志时的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0949.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-464" playOrder="464" class="chapter">
+        <navPoint id="navPoint-465" playOrder="465" class="chapter">
           <navLabel>
             <text>肃清资产阶级思想是长期的事情</text>
           </navLabel>
           <content src="OEBPS/Text/Section0950.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-465" playOrder="465" class="chapter">
+        <navPoint id="navPoint-466" playOrder="466" class="chapter">
           <navLabel>
             <text>在省市委书记会上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0951.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-466" playOrder="466" class="chapter">
+        <navPoint id="navPoint-467" playOrder="467" class="chapter">
           <navLabel>
             <text>马列主义基本原理至今未变，个别结论可以改变</text>
           </navLabel>
           <content src="OEBPS/Text/Section0952.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-467" playOrder="467" class="chapter">
+        <navPoint id="navPoint-468" playOrder="468" class="chapter">
           <navLabel>
             <text>对新、洛、许、信四个地委座谈时的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0953.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-468" playOrder="468" class="chapter">
+        <navPoint id="navPoint-469" playOrder="469" class="chapter">
           <navLabel>
             <text>非洲当前的任务是反对帝国主义</text>
           </navLabel>
           <content src="OEBPS/Text/Section0954.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-469" playOrder="469" class="chapter">
+        <navPoint id="navPoint-470" playOrder="470" class="chapter">
           <navLabel>
             <text>在第二次郑州会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0955.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-470" playOrder="470" class="chapter">
+        <navPoint id="navPoint-471" playOrder="471" class="chapter">
           <navLabel>
             <text>郑州会议纪要</text>
           </navLabel>
           <content src="OEBPS/Text/Section0956.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-471" playOrder="471" class="chapter">
+        <navPoint id="navPoint-472" playOrder="472" class="chapter">
           <navLabel>
             <text>党内通信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0957.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-472" playOrder="472" class="chapter">
+        <navPoint id="navPoint-473" playOrder="473" class="chapter">
           <navLabel>
             <text>党内通信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0958.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-473" playOrder="473" class="chapter">
+        <navPoint id="navPoint-474" playOrder="474" class="chapter">
           <navLabel>
             <text>党内通信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0959.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-474" playOrder="474" class="chapter">
+        <navPoint id="navPoint-475" playOrder="475" class="chapter">
           <navLabel>
             <text>关于西藏平叛</text>
           </navLabel>
           <content src="OEBPS/Text/Section0960.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-475" playOrder="475" class="chapter">
+        <navPoint id="navPoint-476" playOrder="476" class="chapter">
           <navLabel>
             <text>党内通信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0961.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-476" playOrder="476" class="chapter">
+        <navPoint id="navPoint-477" playOrder="477" class="chapter">
           <navLabel>
             <text>工作方法十六条</text>
           </navLabel>
           <content src="OEBPS/Text/Section0962.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-477" playOrder="477" class="chapter">
+        <navPoint id="navPoint-478" playOrder="478" class="chapter">
           <navLabel>
             <text>庐山会议讨论的十八个问题</text>
           </navLabel>
           <content src="OEBPS/Text/Section0963.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-478" playOrder="478" class="chapter">
+        <navPoint id="navPoint-479" playOrder="479" class="chapter">
           <navLabel>
             <text>在庐山会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0964.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-479" playOrder="479" class="chapter">
+        <navPoint id="navPoint-480" playOrder="480" class="chapter">
           <navLabel>
             <text>对《马克思主义者应该如何正确地对待革命的群众运动》一文的批语</text>
           </navLabel>
           <content src="OEBPS/Text/Section0965.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-480" playOrder="480" class="chapter">
+        <navPoint id="navPoint-481" playOrder="481" class="chapter">
           <navLabel>
             <text>机关枪和迫击炮的来历及其他</text>
           </navLabel>
           <content src="OEBPS/Text/Section0966.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-481" playOrder="481" class="chapter">
+        <navPoint id="navPoint-482" playOrder="482" class="chapter">
           <navLabel>
             <text>关于《到韶山》、《登庐山》两首诗给臧克家、徐迟的信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0967.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-482" playOrder="482" class="chapter">
+        <navPoint id="navPoint-483" playOrder="483" class="chapter">
           <navLabel>
             <text>在中共中央军委扩大会议和外事会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0968.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-483" playOrder="483" class="chapter">
+        <navPoint id="navPoint-484" playOrder="484" class="chapter">
           <navLabel>
             <text>同赫鲁晓夫的谈话纪要</text>
           </navLabel>
           <content src="OEBPS/Text/Section0969.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-484" playOrder="484" class="chapter">
+        <navPoint id="navPoint-485" playOrder="485" class="chapter">
           <navLabel>
             <text>同安东诺夫的谈话纪要</text>
           </navLabel>
           <content src="OEBPS/Text/Section0970.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-485" playOrder="485" class="chapter">
+        <navPoint id="navPoint-486" playOrder="486" class="chapter">
           <navLabel>
             <text>同澳共总书记夏基的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0971.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-486" playOrder="486" class="chapter">
+        <navPoint id="navPoint-487" playOrder="487" class="chapter">
           <navLabel>
             <text>关于发展养猪事业的一封信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0972.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-487" playOrder="487" class="chapter">
+        <navPoint id="navPoint-488" playOrder="488" class="chapter">
           <navLabel>
             <text>读苏联《政治经济学教科书》批注与谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0973.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-488" playOrder="488" class="chapter">
+        <navPoint id="navPoint-489" playOrder="489" class="chapter">
           <navLabel>
             <text>关于国际形势的讲话提纲</text>
           </navLabel>
           <content src="OEBPS/Text/Section0974.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-489" playOrder="489" class="chapter">
+        <navPoint id="navPoint-490" playOrder="490" class="chapter">
           <navLabel>
             <text>中央关于加强技术革新和技术革命运动领导的批语</text>
           </navLabel>
           <content src="OEBPS/Text/Section0975.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-490" playOrder="490" class="chapter">
+        <navPoint id="navPoint-491" playOrder="491" class="chapter">
           <navLabel>
             <text>对《鞍山市委关于工业战线上的技术革新和技术革命运动开展情况的报告》的批语</text>
           </navLabel>
           <content src="OEBPS/Text/Section0976.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-491" playOrder="491" class="chapter">
+        <navPoint id="navPoint-492" playOrder="492" class="chapter">
           <navLabel>
             <text>关于反华问题</text>
           </navLabel>
           <content src="OEBPS/Text/Section0977.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-492" playOrder="492" class="chapter">
+        <navPoint id="navPoint-493" playOrder="493" class="chapter">
           <navLabel>
             <text>坚决制止重刮“共产风”等违法乱纪行为</text>
           </navLabel>
           <content src="OEBPS/Text/Section0978.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-493" playOrder="493" class="chapter">
+        <navPoint id="navPoint-494" playOrder="494" class="chapter">
           <navLabel>
             <text>使官僚主义走向它的反面</text>
           </navLabel>
           <content src="OEBPS/Text/Section0979.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-494" playOrder="494" class="chapter">
+        <navPoint id="navPoint-495" playOrder="495" class="chapter">
           <navLabel>
             <text>接见非洲外宾时的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0980.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-495" playOrder="495" class="chapter">
+        <navPoint id="navPoint-496" playOrder="496" class="chapter">
           <navLabel>
             <text>十年总结</text>
           </navLabel>
           <content src="OEBPS/Text/Section0981.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-496" playOrder="496" class="chapter">
+        <navPoint id="navPoint-497" playOrder="497" class="chapter">
           <navLabel>
             <text>彻底纠正五风</text>
           </navLabel>
           <content src="OEBPS/Text/Section0982.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-497" playOrder="497" class="chapter">
+        <navPoint id="navPoint-498" playOrder="498" class="chapter">
           <navLabel>
             <text>永远不许一平二调</text>
           </navLabel>
           <content src="OEBPS/Text/Section0983.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-498" playOrder="498" class="chapter">
+        <navPoint id="navPoint-499" playOrder="499" class="chapter">
           <navLabel>
             <text>坚决退赔，刹住“共产风”</text>
           </navLabel>
           <content src="OEBPS/Text/Section0984.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-499" playOrder="499" class="chapter">
+        <navPoint id="navPoint-500" playOrder="500" class="chapter">
           <navLabel>
             <text>今年搞一个实事求是年</text>
           </navLabel>
           <content src="OEBPS/Text/Section0985.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-500" playOrder="500" class="chapter">
+        <navPoint id="navPoint-501" playOrder="501" class="chapter">
           <navLabel>
             <text>一九六一年要成为调查研究年</text>
           </navLabel>
           <content src="OEBPS/Text/Section0986.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-501" playOrder="501" class="chapter">
+        <navPoint id="navPoint-502" playOrder="502" class="chapter">
           <navLabel>
             <text>在广州关于调查研究问题的两次讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0987.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-502" playOrder="502" class="chapter">
+        <navPoint id="navPoint-503" playOrder="503" class="chapter">
           <navLabel>
             <text>给江西共产主义劳动大学的一封信</text>
           </navLabel>
           <content src="OEBPS/Text/Section0988.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-503" playOrder="503" class="chapter">
+        <navPoint id="navPoint-504" playOrder="504" class="chapter">
           <navLabel>
             <text>在扩大的中央工作会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0989.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-504" playOrder="504" class="chapter">
+        <navPoint id="navPoint-505" playOrder="505" class="chapter">
           <navLabel>
             <text>从现在起要年年讲阶级斗争</text>
           </navLabel>
           <content src="OEBPS/Text/Section0990.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-505" playOrder="505" class="chapter">
+        <navPoint id="navPoint-506" playOrder="506" class="chapter">
           <navLabel>
             <text>对《浙江省七个关于干部参加劳动的好材料》的批示</text>
           </navLabel>
           <content src="OEBPS/Text/Section0991.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-506" playOrder="506" class="chapter">
+        <navPoint id="navPoint-507" playOrder="507" class="chapter">
           <navLabel>
             <text>人的正确思想是从哪里来的？</text>
           </navLabel>
           <content src="OEBPS/Text/Section0992.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-507" playOrder="507" class="chapter">
+        <navPoint id="navPoint-508" playOrder="508" class="chapter">
           <navLabel>
             <text>在杭州会议上的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0993.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-508" playOrder="508" class="chapter">
+        <navPoint id="navPoint-509" playOrder="509" class="chapter">
           <navLabel>
             <text>呼吁世界人民联合起来反对美国帝国主义的种族歧视、支持美国黑人反对种族歧视的斗争的声明</text>
           </navLabel>
           <content src="OEBPS/Text/Section0994.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-509" playOrder="509" class="chapter">
+        <navPoint id="navPoint-510" playOrder="510" class="chapter">
           <navLabel>
             <text>反对美国——吴庭艳集团侵略和屠杀越南南方人民的声明</text>
           </navLabel>
           <content src="OEBPS/Text/Section0995.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-510" playOrder="510" class="chapter">
+        <navPoint id="navPoint-511" playOrder="511" class="chapter">
           <navLabel>
             <text>谦虚——戒骄</text>
           </navLabel>
           <content src="OEBPS/Text/Section0996.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-511" playOrder="511" class="chapter">
+        <navPoint id="navPoint-512" playOrder="512" class="chapter">
           <navLabel>
             <text>春节谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section0997.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-512" playOrder="512" class="chapter">
+        <navPoint id="navPoint-513" playOrder="513" class="chapter">
           <navLabel>
             <text>毛主席论教育革命</text>
           </navLabel>
           <content src="OEBPS/Text/Section0998.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-513" playOrder="513" class="chapter">
+        <navPoint id="navPoint-514" playOrder="514" class="chapter">
           <navLabel>
             <text>中国变成修正主义，你们怎么办？</text>
           </navLabel>
           <content src="OEBPS/Text/Section0999.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-514" playOrder="514" class="chapter">
+        <navPoint id="navPoint-515" playOrder="515" class="chapter">
           <navLabel>
             <text>关于加强三线建设的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section09100.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-515" playOrder="515" class="chapter">
+        <navPoint id="navPoint-516" playOrder="516" class="chapter">
           <navLabel>
             <text>培养无产阶级的革命接班人</text>
           </navLabel>
           <content src="OEBPS/Text/Section09101.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-516" playOrder="516" class="chapter">
+        <navPoint id="navPoint-517" playOrder="517" class="chapter">
           <navLabel>
             <text>支持被压迫人民反对帝国主义的战争</text>
           </navLabel>
           <content src="OEBPS/Text/Section09102.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-517" playOrder="517" class="chapter">
+        <navPoint id="navPoint-518" playOrder="518" class="chapter">
           <navLabel>
             <text>接见日本社会党人士的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section09103.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-518" playOrder="518" class="chapter">
+        <navPoint id="navPoint-519" playOrder="519" class="chapter">
           <navLabel>
             <text>关于哲学问题的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section09104.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-519" playOrder="519" class="chapter">
+        <navPoint id="navPoint-520" playOrder="520" class="chapter">
           <navLabel>
             <text>关于人的认识问题</text>
           </navLabel>
           <content src="OEBPS/Text/Section09105.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-520" playOrder="520" class="chapter">
+        <navPoint id="navPoint-521" playOrder="521" class="chapter">
           <navLabel>
             <text>官僚主义者阶级与工农是尖锐对立的</text>
           </navLabel>
           <content src="OEBPS/Text/Section09106.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-521" playOrder="521" class="chapter">
+        <navPoint id="navPoint-522" playOrder="522" class="chapter">
           <navLabel>
             <text>同斯诺的谈话</text>
           </navLabel>
           <content src="OEBPS/Text/Section09107.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-522" playOrder="522" class="chapter">
+        <navPoint id="navPoint-523" playOrder="523" class="chapter">
           <navLabel>
             <text>中国走资本主义道路走不通</text>
           </navLabel>
           <content src="OEBPS/Text/Section09108.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-523" playOrder="523" class="chapter">
+        <navPoint id="navPoint-524" playOrder="524" class="chapter">
           <navLabel>
             <text>把医疗卫生工作的重点放到农村去</text>
           </navLabel>
           <content src="OEBPS/Text/Section09109.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-524" playOrder="524" class="chapter">
+        <navPoint id="navPoint-525" playOrder="525" class="chapter">
           <navLabel>
             <text>突出政治，反对折衷主义</text>
           </navLabel>
           <content src="OEBPS/Text/Section09110.xhtml"/>
         </navPoint>
-        <navPoint id="navPoint-525" playOrder="525" class="chapter">
+        <navPoint id="navPoint-526" playOrder="526" class="chapter">
           <navLabel>
             <text>在杭州会议上的讲话</text>
           </navLabel>
           <content src="OEBPS/Text/Section09111.xhtml"/>
         </navPoint>
       </navPoint>
-      <navPoint id="navPoint-526" playOrder="526" class="chapter">
+      <navPoint id="navPoint-527" playOrder="527" class="chapter">
         <navLabel>
           <text>第六卷后记</text>
         </navLabel>
         <content src="OEBPS/Text/Afterword01.xhtml"/>
-      </navPoint>
-      <navPoint id="navPoint-527" playOrder="527" class="chapter">
-        <navLabel>
-          <text>再版说明</text>
-        </navLabel>
-        <content src="OEBPS/Text/Section09113.xhtml"/>
       </navPoint>
     </navPoint>
     <navPoint id="navPoint-528" playOrder="528" class="chapter">
