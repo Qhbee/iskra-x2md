@@ -38,7 +38,7 @@
         <navLabel>
           <text>第一次国内革命战争时期</text>
         </navLabel>
-        <content src="OEBPS/Text/Section01.xhtml"/>
+        <content src="OEBPS/Text/Chapter01.xhtml"/>
         <navPoint id="navPoint-6" playOrder="6" class="chapter">
           <navLabel>
             <text>中国社会各阶级的分析</text>
@@ -56,7 +56,7 @@
         <navLabel>
           <text>第二次国内革命战争时期</text>
         </navLabel>
-        <content src="OEBPS/Text/Section02.xhtml"/>
+        <content src="OEBPS/Text/Chapter02.xhtml"/>
         <navPoint id="navPoint-9" playOrder="9" class="chapter">
           <navLabel>
             <text>中国的红色政权为什么能够存在？</text>
@@ -164,7 +164,7 @@
         <navLabel>
           <text>抗日战争时期（上）</text>
         </navLabel>
-        <content src="OEBPS/Text/Section03.xhtml"/>
+        <content src="OEBPS/Text/Chapter03.xhtml"/>
         <navPoint id="navPoint-27" playOrder="27" class="chapter">
           <navLabel>
             <text>反对日本进攻的方针、办法和前途</text>
@@ -416,7 +416,7 @@
         <navLabel>
           <text>抗日战争时期（下）</text>
         </navLabel>
-        <content src="OEBPS/Text/Section04.xhtml"/>
+        <content src="OEBPS/Text/Chapter04.xhtml"/>
         <navPoint id="navPoint-69" playOrder="69" class="chapter">
           <navLabel>
             <text>《农村调查》的序言和跋</text>
@@ -620,7 +620,7 @@
         <navLabel>
           <text>第三次国内革命战争时期</text>
         </navLabel>
-        <content src="OEBPS/Text/Section05.xhtml"/>
+        <content src="OEBPS/Text/Chapter05.xhtml"/>
         <navPoint id="navPoint-103" playOrder="103" class="chapter">
           <navLabel>
             <text>抗日战争胜利后的时局和我们的方针</text>
@@ -1058,7 +1058,7 @@
         <navLabel>
           <text>社会主义革命和社会主义建设时期（一）</text>
         </navLabel>
-        <content src="OEBPS/Text/Section06.xhtml"/>
+        <content src="OEBPS/Text/Chapter06.xhtml"/>
         <navPoint id="navPoint-176" playOrder="176" class="chapter">
           <navLabel>
             <text>中国人民站起来了</text>
@@ -1502,7 +1502,7 @@
         <navLabel>
           <text>社会主义革命和社会主义建设时期（二）</text>
         </navLabel>
-        <content src="OEBPS/Text/Section07.xhtml"/>
+        <content src="OEBPS/Text/Chapter07.xhtml"/>
         <navPoint id="navPoint-250" playOrder="250" class="chapter">
           <navLabel>
             <text>关于中国人民志愿军撤出朝鲜问题</text>
@@ -1976,7 +1976,7 @@
         <navLabel>
           <text>文化大革命时期</text>
         </navLabel>
-        <content src="OEBPS/Text/Section08.xhtml"/>
+        <content src="OEBPS/Text/Chapter08.xhtml"/>
         <navPoint id="navPoint-329" playOrder="329" class="chapter">
           <navLabel>
             <text>关于农业机械化</text>
@@ -2492,7 +2492,7 @@
         <navLabel>
           <text>社会主义革命和社会主义建设时期（中）</text>
         </navLabel>
-        <content src="OEBPS/Text/Section09.xhtml"/>
+        <content src="OEBPS/Text/Chapter09.xhtml"/>
         <navPoint id="navPoint-415" playOrder="415" class="chapter">
           <navLabel>
             <text>在杭州会议上的讲话提纲</text>
@@ -3188,7 +3188,7 @@
         <navLabel>
           <text>社会主义革命和社会主义建设时期（下）</text>
         </navLabel>
-        <content src="OEBPS/Text/Section10.xhtml"/>
+        <content src="OEBPS/Text/Chapter10.xhtml"/>
         <navPoint id="navPoint-531" playOrder="531" class="chapter">
           <navLabel>
             <text>用二十五年时间，基本上实现农业机械化</text>
@@ -3224,7 +3224,7 @@
         <navLabel>
           <text>第一次无产阶级文化大革命时期</text>
         </navLabel>
-        <content src="OEBPS/Text/Section11.xhtml"/>
+        <content src="OEBPS/Text/Chapter11.xhtml"/>
         <navPoint id="navPoint-537" playOrder="537" class="chapter">
           <navLabel>
             <text>在中央政治局扩大会议上的讲话</text>

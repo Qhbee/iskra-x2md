@@ -21,10 +21,10 @@
     <item id="Volume01.xhtml" href="OEBPS/Text/Volume01.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface01.xhtml" href="OEBPS/Text/Preface01.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface02.xhtml" href="OEBPS/Text/Preface02.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section01.xhtml" href="OEBPS/Text/Section01.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter01.xhtml" href="OEBPS/Text/Chapter01.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0101.xhtml" href="OEBPS/Text/Section0101.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0102.xhtml" href="OEBPS/Text/Section0102.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section02.xhtml" href="OEBPS/Text/Section02.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter02.xhtml" href="OEBPS/Text/Chapter02.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0201.xhtml" href="OEBPS/Text/Section0201.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0202.xhtml" href="OEBPS/Text/Section0202.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0203.xhtml" href="OEBPS/Text/Section0203.xhtml" media-type="application/xhtml+xml"/>
@@ -42,7 +42,7 @@
     <item id="Section0215.xhtml" href="OEBPS/Text/Section0215.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0216.xhtml" href="OEBPS/Text/Section0216.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume02.xhtml" href="OEBPS/Text/Volume02.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section03.xhtml" href="OEBPS/Text/Section03.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter03.xhtml" href="OEBPS/Text/Chapter03.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0301.xhtml" href="OEBPS/Text/Section0301.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0302.xhtml" href="OEBPS/Text/Section0302.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0303.xhtml" href="OEBPS/Text/Section0303.xhtml" media-type="application/xhtml+xml"/>
@@ -84,7 +84,7 @@
     <item id="Section0339.xhtml" href="OEBPS/Text/Section0339.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0340.xhtml" href="OEBPS/Text/Section0340.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume03.xhtml" href="OEBPS/Text/Volume03.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section04.xhtml" href="OEBPS/Text/Section04.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter04.xhtml" href="OEBPS/Text/Chapter04.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0401.xhtml" href="OEBPS/Text/Section0401.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0402.xhtml" href="OEBPS/Text/Section0402.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0403.xhtml" href="OEBPS/Text/Section0403.xhtml" media-type="application/xhtml+xml"/>
@@ -118,7 +118,7 @@
     <item id="Section0431.xhtml" href="OEBPS/Text/Section0431.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0432.xhtml" href="OEBPS/Text/Section0432.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume04.xhtml" href="OEBPS/Text/Volume04.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section05.xhtml" href="OEBPS/Text/Section05.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter05.xhtml" href="OEBPS/Text/Chapter05.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0501.xhtml" href="OEBPS/Text/Section0501.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0502.xhtml" href="OEBPS/Text/Section0502.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0503.xhtml" href="OEBPS/Text/Section0503.xhtml" media-type="application/xhtml+xml"/>
@@ -192,7 +192,7 @@
     <item id="Volume05.xhtml" href="OEBPS/Text/Volume05.xhtml" media-type="application/xhtml+xml"/>
     <item id="Author1.xhtml" href="OEBPS/Text/Author1.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface03.xhtml" href="OEBPS/Text/Preface03.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section06.xhtml" href="OEBPS/Text/Section06.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter06.xhtml" href="OEBPS/Text/Chapter06.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0601.xhtml" href="OEBPS/Text/Section0601.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0602.xhtml" href="OEBPS/Text/Section0602.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0603.xhtml" href="OEBPS/Text/Section0603.xhtml" media-type="application/xhtml+xml"/>
@@ -266,7 +266,7 @@
     <item id="Volume06.xhtml" href="OEBPS/Text/Volume06.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface04.xhtml" href="OEBPS/Text/Preface04.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface05.xhtml" href="OEBPS/Text/Preface05.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section07.xhtml" href="OEBPS/Text/Section07.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter07.xhtml" href="OEBPS/Text/Chapter07.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0701.xhtml" href="OEBPS/Text/Section0701.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0702.xhtml" href="OEBPS/Text/Section0702.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0703.xhtml" href="OEBPS/Text/Section0703.xhtml" media-type="application/xhtml+xml"/>
@@ -345,7 +345,7 @@
     <item id="Volume07.xhtml" href="OEBPS/Text/Volume07.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface06.xhtml" href="OEBPS/Text/Preface06.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface07.xhtml" href="OEBPS/Text/Preface07.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section08.xhtml" href="OEBPS/Text/Section08.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter08.xhtml" href="OEBPS/Text/Chapter08.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0801.xhtml" href="OEBPS/Text/Section0801.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0802.xhtml" href="OEBPS/Text/Section0802.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0803.xhtml" href="OEBPS/Text/Section0803.xhtml" media-type="application/xhtml+xml"/>
@@ -431,7 +431,7 @@
     <item id="Section0883.xhtml" href="OEBPS/Text/Section0883.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume08.xhtml" href="OEBPS/Text/Volume08.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface08.xhtml" href="OEBPS/Text/Preface08.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section09.xhtml" href="OEBPS/Text/Section09.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter09.xhtml" href="OEBPS/Text/Chapter09.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0901.xhtml" href="OEBPS/Text/Section0901.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0902.xhtml" href="OEBPS/Text/Section0902.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section0903.xhtml" href="OEBPS/Text/Section0903.xhtml" media-type="application/xhtml+xml"/>
@@ -547,13 +547,13 @@
     <item id="Section09113.xhtml" href="OEBPS/Text/Section09113.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume09.xhtml" href="OEBPS/Text/Volume09.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface09.xhtml" href="OEBPS/Text/Preface09.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section10.xhtml" href="OEBPS/Text/Section10.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter10.xhtml" href="OEBPS/Text/Chapter10.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1001.xhtml" href="OEBPS/Text/Section1001.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1002.xhtml" href="OEBPS/Text/Section1002.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1003.xhtml" href="OEBPS/Text/Section1003.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1004.xhtml" href="OEBPS/Text/Section1004.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1005.xhtml" href="OEBPS/Text/Section1005.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section11.xhtml" href="OEBPS/Text/Section11.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Chapter11.xhtml" href="OEBPS/Text/Chapter11.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1101.xhtml" href="OEBPS/Text/Section1101.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1102.xhtml" href="OEBPS/Text/Section1102.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section1103.xhtml" href="OEBPS/Text/Section1103.xhtml" media-type="application/xhtml+xml"/>
@@ -683,10 +683,10 @@
     <itemref idref="Volume01.xhtml"/>
     <itemref idref="Preface01.xhtml"/>
     <itemref idref="Preface02.xhtml"/>
-    <itemref idref="Section01.xhtml"/>
+    <itemref idref="Chapter01.xhtml"/>
     <itemref idref="Section0101.xhtml"/>
     <itemref idref="Section0102.xhtml"/>
-    <itemref idref="Section02.xhtml"/>
+    <itemref idref="Chapter02.xhtml"/>
     <itemref idref="Section0201.xhtml"/>
     <itemref idref="Section0202.xhtml"/>
     <itemref idref="Section0203.xhtml"/>
@@ -704,7 +704,7 @@
     <itemref idref="Section0215.xhtml"/>
     <itemref idref="Section0216.xhtml"/>
     <itemref idref="Volume02.xhtml"/>
-    <itemref idref="Section03.xhtml"/>
+    <itemref idref="Chapter03.xhtml"/>
     <itemref idref="Section0301.xhtml"/>
     <itemref idref="Section0302.xhtml"/>
     <itemref idref="Section0303.xhtml"/>
@@ -746,7 +746,7 @@
     <itemref idref="Section0339.xhtml"/>
     <itemref idref="Section0340.xhtml"/>
     <itemref idref="Volume03.xhtml"/>
-    <itemref idref="Section04.xhtml"/>
+    <itemref idref="Chapter04.xhtml"/>
     <itemref idref="Section0401.xhtml"/>
     <itemref idref="Section0402.xhtml"/>
     <itemref idref="Section0403.xhtml"/>
@@ -780,7 +780,7 @@
     <itemref idref="Section0431.xhtml"/>
     <itemref idref="Section0432.xhtml"/>
     <itemref idref="Volume04.xhtml"/>
-    <itemref idref="Section05.xhtml"/>
+    <itemref idref="Chapter05.xhtml"/>
     <itemref idref="Section0501.xhtml"/>
     <itemref idref="Section0502.xhtml"/>
     <itemref idref="Section0503.xhtml"/>
@@ -854,7 +854,7 @@
     <itemref idref="Volume05.xhtml"/>
     <itemref idref="Author1.xhtml"/>
     <itemref idref="Preface03.xhtml"/>
-    <itemref idref="Section06.xhtml"/>
+    <itemref idref="Chapter06.xhtml"/>
     <itemref idref="Section0601.xhtml"/>
     <itemref idref="Section0602.xhtml"/>
     <itemref idref="Section0603.xhtml"/>
@@ -928,7 +928,7 @@
     <itemref idref="Volume06.xhtml"/>
     <itemref idref="Preface04.xhtml"/>
     <itemref idref="Preface05.xhtml"/>
-    <itemref idref="Section07.xhtml"/>
+    <itemref idref="Chapter07.xhtml"/>
     <itemref idref="Section0701.xhtml"/>
     <itemref idref="Section0702.xhtml"/>
     <itemref idref="Section0703.xhtml"/>
@@ -1007,7 +1007,7 @@
     <itemref idref="Volume07.xhtml"/>
     <itemref idref="Preface06.xhtml"/>
     <itemref idref="Preface07.xhtml"/>
-    <itemref idref="Section08.xhtml"/>
+    <itemref idref="Chapter08.xhtml"/>
     <itemref idref="Section0801.xhtml"/>
     <itemref idref="Section0802.xhtml"/>
     <itemref idref="Section0803.xhtml"/>
@@ -1093,7 +1093,7 @@
     <itemref idref="Section0883.xhtml"/>
     <itemref idref="Volume08.xhtml"/>
     <itemref idref="Preface08.xhtml"/>
-    <itemref idref="Section09.xhtml"/>
+    <itemref idref="Chapter09.xhtml"/>
     <itemref idref="Section0901.xhtml"/>
     <itemref idref="Section0902.xhtml"/>
     <itemref idref="Section0903.xhtml"/>
@@ -1209,13 +1209,13 @@
     <itemref idref="Section09113.xhtml"/>
     <itemref idref="Volume09.xhtml"/>
     <itemref idref="Preface09.xhtml"/>
-    <itemref idref="Section10.xhtml"/>
+    <itemref idref="Chapter10.xhtml"/>
     <itemref idref="Section1001.xhtml"/>
     <itemref idref="Section1002.xhtml"/>
     <itemref idref="Section1003.xhtml"/>
     <itemref idref="Section1004.xhtml"/>
     <itemref idref="Section1005.xhtml"/>
-    <itemref idref="Section11.xhtml"/>
+    <itemref idref="Chapter11.xhtml"/>
     <itemref idref="Section1101.xhtml"/>
     <itemref idref="Section1102.xhtml"/>
     <itemref idref="Section1103.xhtml"/>
