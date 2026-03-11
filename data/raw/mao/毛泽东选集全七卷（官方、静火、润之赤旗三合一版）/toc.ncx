@@ -2492,7 +2492,7 @@
         <navLabel>
           <text>再版说明</text>
         </navLabel>
-        <content src="OEBPS/Text/Preface08-2.xhtml"/>
+        <content src="OEBPS/Text/Preface09.xhtml"/>
       </navPoint>
       <navPoint id="navPoint-415" playOrder="415" class="chapter">
         <navLabel>
