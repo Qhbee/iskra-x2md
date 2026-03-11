@@ -543,7 +543,7 @@
     <item id="Section09109.xhtml" href="OEBPS/Text/Section09109.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section09110.xhtml" href="OEBPS/Text/Section09110.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section09111.xhtml" href="OEBPS/Text/Section09111.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section09112.xhtml" href="OEBPS/Text/Section09112.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Afterword01.xhtml" href="OEBPS/Text/Afterword01.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section09113.xhtml" href="OEBPS/Text/Section09113.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume09.xhtml" href="OEBPS/Text/Volume09.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface09.xhtml" href="OEBPS/Text/Preface09.xhtml" media-type="application/xhtml+xml"/>
@@ -657,7 +657,7 @@
     <item id="Section11101.xhtml" href="OEBPS/Text/Section11101.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section11102.xhtml" href="OEBPS/Text/Section11102.xhtml" media-type="application/xhtml+xml"/>
     <item id="Section11103.xhtml" href="OEBPS/Text/Section11103.xhtml" media-type="application/xhtml+xml"/>
-    <item id="Section11104.xhtml" href="OEBPS/Text/Section11104.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Afterword02.xhtml" href="OEBPS/Text/Afterword02.xhtml" media-type="application/xhtml+xml"/>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
     <item id="page_css" href="page_styles.css" media-type="text/css"/>
     <item id="css" href="stylesheet.css" media-type="text/css"/>
@@ -1205,7 +1205,7 @@
     <itemref idref="Section09109.xhtml"/>
     <itemref idref="Section09110.xhtml"/>
     <itemref idref="Section09111.xhtml"/>
-    <itemref idref="Section09112.xhtml"/>
+    <itemref idref="Afterword01.xhtml"/>
     <itemref idref="Section09113.xhtml"/>
     <itemref idref="Volume09.xhtml"/>
     <itemref idref="Preface09.xhtml"/>
@@ -1319,7 +1319,7 @@
     <itemref idref="Section11101.xhtml"/>
     <itemref idref="Section11102.xhtml"/>
     <itemref idref="Section11103.xhtml"/>
-    <itemref idref="Section11104.xhtml"/>
+    <itemref idref="Afterword02.xhtml"/>
   </spine>
   <guide>
     <reference type="epigraph" href="OEBPS/Text/Epigraph.xhtml" title="Epigraph"/>

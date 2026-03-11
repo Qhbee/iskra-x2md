@@ -3164,7 +3164,7 @@
         <navLabel>
           <text>第六卷后记</text>
         </navLabel>
-        <content src="OEBPS/Text/Section09112.xhtml"/>
+        <content src="OEBPS/Text/Afterword01.xhtml"/>
       </navPoint>
       <navPoint id="navPoint-527" playOrder="527" class="chapter">
         <navLabel>
@@ -3848,7 +3848,7 @@
         <navLabel>
           <text>第七卷后记</text>
         </navLabel>
-        <content src="OEBPS/Text/Section11104.xhtml"/>
+        <content src="OEBPS/Text/Afterword02.xhtml"/>
       </navPoint>
     </navPoint>
   </navMap>
