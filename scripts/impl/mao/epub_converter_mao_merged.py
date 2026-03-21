@@ -1,6 +1,8 @@
 """
 EPUB 转 Markdown：按 spine 顺序逐 HTML 转换，输出 Page Bundles（index.md + assets/）。
 与 pdf_converter_custom 输出格式一致。
+
+本脚本针对：毛泽东选集全七卷（官方、静火、润之赤旗三合一版），非静火单源 EPUB。
 """
 
 import os
@@ -19,7 +21,7 @@ from ebooklib import epub
 
 from bs4 import BeautifulSoup
 
-from epub_html_parser import clean_filename, parse_html_to_markdown
+from epub_html_parser_mao_merged import clean_filename, parse_html_to_markdown
 
 # ==================== 仪表盘配置 ====================
 
@@ -28,8 +30,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 from scripts.utils.replace_circle_zero import run as replace_circle_zero_run
 
-INPUT_EPUB = PROJECT_ROOT / "data/raw/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版.epub"
-OUTPUT_DIR = PROJECT_ROOT / "data/processed/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版"
+INPUT_EPUB = PROJECT_ROOT / "data/raw/mao/毛泽东选集全七卷（官方、静火、润之赤旗三合一版）.epub"
+OUTPUT_DIR = PROJECT_ROOT / "data/processed/mao/毛泽东选集全七卷（官方、静火、润之赤旗三合一版）"
 
 # True = 侦察模式（只看 spine 结构）
 # False = 执行模式（生成 Markdown）
@@ -495,7 +497,7 @@ def main():
         final = "---\n" + yaml.dump(front_matter, allow_unicode=True) + "---\n\n" + body
         (contents_article_dir / "index.md").write_text(final, encoding="utf-8")
         print("\n📋 已生成目录")
-        print(f"💡 若发现漏项，可运行: python scripts/impl/mao/gen_toc_from_output.py {output_base}, 切换方案重新生成")
+        print(f"💡 若发现漏项，可运行: python scripts/impl/mao/gen_toc_from_output_mao_merged.py {output_base}, 切换方案重新生成")
 
     # 圈为零替换（○ → 〇）
     print("\n🔄 执行 ○ → 〇 替换...")

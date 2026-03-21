@@ -1,6 +1,9 @@
 """
 EPUB 单 HTML 解析器：清洗、图片提取、HTML→Markdown 转换、后处理。
 与 PDF 转 MD 输出格式一致。
+
+专用于：《毛泽东选集全七卷（官方、静火、润之赤旗三合一版）》→ 由 epub_converter_mao_merged.py 调用。
+若三合一与静火版 HTML/CSS 类名、结构不一致，请在本文件调整，勿修改同目录下的 epub_html_parser.py（静火流水线仍用后者）。
 """
 
 import re

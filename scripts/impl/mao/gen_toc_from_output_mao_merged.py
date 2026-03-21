@@ -1,7 +1,10 @@
 """
 方案 B：转换完成后，扫描输出目录，根据实际目录结构生成目录 MD。
 不依赖 epub toc，夹逼/漏掉/后加的文章都能正确反映。
-用法: python gen_toc_from_output.py [输出目录]
+
+专用于：《毛泽东选集全七卷（官方、静火、润之赤旗三合一版）》处理后的 Markdown 树。
+
+用法: python gen_toc_from_output_mao_merged.py [输出目录]
 """
 
 import os
@@ -74,7 +77,7 @@ def main():
     if len(sys.argv) >= 2:
         output_dir = Path(sys.argv[1])
     else:
-        output_dir = Path(__file__).resolve().parent.parent.parent.parent / "data/processed/mao/毛泽东选集（1-7卷 静火版）V1.20 2019最新版"
+        output_dir = Path(__file__).resolve().parent.parent.parent.parent / "data/processed/mao/毛泽东选集全七卷（官方、静火、润之赤旗三合一版）"
 
     if not output_dir.exists():
         print(f"❌ 目录不存在: {output_dir}")
