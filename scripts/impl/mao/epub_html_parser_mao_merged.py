@@ -4,6 +4,8 @@ EPUB 单 HTML 解析器：清洗、图片提取、HTML→Markdown 转换、后�
 
 专用于：《毛泽东选集全七卷（官方、静火、润之赤旗三合一版）》→ 由 epub_converter_mao_merged.py 调用。
 若三合一与静火版 HTML/CSS 类名、结构不一致，请在本文件调整，勿修改同目录下的 epub_html_parser.py（静火流水线仍用后者）。
+
+三合一 stylesheet 为多看脚注（.duokan-footnote*），不包含静火 .zy/.zs/.zs1；脚注解析仅实现 Duokan；静火版请用 epub_html_parser.py。
 """
 
 import re
@@ -11,7 +13,7 @@ from collections import deque
 from itertools import groupby
 from pathlib import Path
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from markdownify import markdownify as md
 
 # ================= 配置 =================
@@ -101,88 +103,64 @@ def _convert_centered_subheadings(soup):
 
 def _convert_footnotes_to_markdown(soup) -> str:
     """
-    将毛选 EPUB 的注释格式转为 Markdown 脚注（与马列 PDF 输出一致）。
-    - 正文内 <a class="zy" href="#idNa">〔N〕</a> → [^N]
-    - 注释区 <p class="zs"><a class="hl" id="idNa">〔N〕</a>内容</p> → [^N]: 内容
-    - p.zs1 为上一注脚续行，拼接到上一段
-    """
-    # 1. 正文内：a.zy 替换为 [^N]
-    for a in soup.find_all("a", class_="zy"):
-        aid = a.get("id") or ""
-        m = re.match(r"^id(\d+)$", aid)
-        if m:
-            note_id = m.group(1)
-            ref = soup.new_string(f"[^{note_id}]")
-            a.replace_with(ref)
+    将三合一毛选 EPUB 的注释格式转为 Markdown 脚注（与马列 PDF 输出一致）。
 
+    仅处理多看（Duokan）结构：stylesheet 中 .duokan-footnote / .duokan-footnote-content 等；
+    文内 ol.duokan-footnote-content + a.duokan-footnote（常为 sup+note.png）。
+
+    - 文末 li 的 id 与文内 href（如 #ref_footnotebookmark_end_1_1、#A-9）对应
+    - li 内 p.footnote 首段 a.duokan-footnote（◎）仅作标记，不写入 [^n]: 正文
+    - 正文 [^n]，文末 [^n]: 全文；序号按 ol 中 li 顺序从 1 递增
+    """
     body = soup.find("body") or soup
-    div = body.find("div", class_="div") or body
-    if not hasattr(div, "find_all"):
+    href_to_num: dict[str, int] = {}
+    footnote_defs: list[tuple[int, str]] = []
+    idx_global = 0
+
+    ols = body.find_all("ol", class_=lambda c: c and "duokan-footnote-content" in c)
+    for ol in ols:
+        for li in ol.find_all("li", recursive=False):
+            idx_global += 1
+            idx = idx_global
+            li_id = li.get("id")
+            if li_id:
+                href_to_num[li_id] = idx
+            p_fn = li.find("p", class_=lambda c: c and "footnote" in (c or []))
+            if not p_fn:
+                p_fn = li.find("p")
+            text = ""
+            if p_fn:
+                for a in p_fn.find_all("a", class_="duokan-footnote"):
+                    h = (a.get("href") or "").lstrip("#")
+                    if h:
+                        href_to_num[h] = idx
+                for a in list(p_fn.find_all("a", class_="duokan-footnote")):
+                    a.decompose()
+                for br in p_fn.find_all("br"):
+                    br.replace_with("\n")
+                text = p_fn.get_text(separator="", strip=True)
+                text = re.sub(r"\s+", " ", text).strip()
+            footnote_defs.append((idx, text))
+        ol.decompose()
+
+    if not footnote_defs:
         return ""
 
-    # 3. 收集 p.zs / p.zs1，转为 [^N]: content（按文档顺序）
-    current_note_id = None
-    current_content = []
-    note_blocks = []
-
-    for tag in div.find_all("p", class_=True):
-        classes = tag.get("class", [])
-        is_zs = "zs" in classes and "zs1" not in classes
-        is_zs1 = "zs1" in classes
-        if not is_zs and not is_zs1:
+    for a in list(soup.find_all("a", class_="duokan-footnote")):
+        h = (a.get("href") or "").lstrip("#")
+        if not h:
             continue
-
-        if is_zs:
-            a_hl = tag.find("a", class_="hl")
-            if a_hl:
-                if current_note_id is not None and current_content:
-                    note_blocks.append((current_note_id, current_content))
-                mid = a_hl.get("id") or ""
-                mm = re.match(r"^id(\d+)a$", mid)
-                if mm:
-                    current_note_id = mm.group(1)
-                    parts = []
-                    for s in a_hl.next_siblings:
-                        if hasattr(s, "get_text"):
-                            parts.append(s.get_text())
-                        elif isinstance(s, str):
-                            parts.append(s)
-                    content = " ".join(parts).strip()
-                    current_content = [content] if content else []
-        else:
-            if current_note_id is not None:
-                current_content.append(tag.get_text(separator=" ", strip=True))
-
-    if current_note_id is not None and current_content:
-        note_blocks.append((current_note_id, current_content))
-
-    # 4. 移除注释区（p.zs/p.zs1 已收集；移除「注　　释」标题行）
-    for tag in div.find_all("p", class_=True):
-        classes = tag.get("class", [])
-        if "zs" in classes or "zs1" in classes:
-            tag.decompose()
-    for tag in div.find_all("p"):
-        txt = tag.get_text(strip=True)
-        if txt and "注" in txt and "释" in txt and len(txt) < 15:
-            tag.decompose()
-            break
-
-    # 5. 生成脚注块（多段时用缩进续行，保留分段）
-    def _indent_block(s):
-        """段落内若有换行，每行都缩进"""
-        return "\n".join("    " + line for line in s.split("\n"))
-
-    lines = []
-    for nid, paras in note_blocks:
-        if not paras:
+        n = href_to_num.get(h)
+        if n is None:
             continue
-        first = paras[0].strip()
-        rest = [p.strip() for p in paras[1:] if p.strip()]
-        if rest:
-            body = first + "\n\n" + "\n\n".join(_indent_block(p) for p in rest)
+        repl = NavigableString(f"[^{n}]")
+        parent = a.parent
+        if parent and parent.name == "sup":
+            parent.replace_with(repl)
         else:
-            body = first
-        lines.append(f"[^{nid}]: {body}")
+            a.replace_with(repl)
+
+    lines = [f"[^{i}]: {t}" for i, t in sorted(footnote_defs, key=lambda x: x[0])]
     return "\n\n".join(lines) if lines else ""
 
 
