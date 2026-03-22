@@ -1,4 +1,5 @@
 .calibre {
+  /* 整个 body 整体样式 */
   display: block;
   font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
   font-size: 1em;
@@ -8,6 +9,7 @@
   padding: 0% 0;
 }
 .calibre1 {
+  /* 卷名大标题 */
   display: none;
   font-size: 2em;
   font-weight: bold;
@@ -15,6 +17,7 @@
   margin: 0.67em 0;
 }
 .calibre2 {
+  /* 题词（毛体） */
   color: #951b2a;
   display: block;
   duokan-text-indent: 0;
@@ -26,28 +29,34 @@
   margin: 65% auto auto;
 }
 .calibre3 {
+  /* 换行 br 或者 NBSP 空白行 */
   display: block;
 }
 .calibre4 {
+  /* 插图自身 */
   height: auto;
   width: 100%;
 }
 .calibre5 {
+  /* 卷名图片自身 */
   height: auto;
   width: auto;
 }
 .calibre6 {
+  /* 前言后记一级标题上修饰加粗标签 */
   font-family: fzqkbysjt;
   font-size: 1em;
   font-weight: bold;
   line-height: 1.2;
 }
 .calibre7 {
+  /* 正文一级二级标题中注释符号的上标 */
   font-size: 1em;
   line-height: 1.2;
   vertical-align: super;
 }
 .calibre8 {
+  /* 正文中注释符号的图片 */
   height: 0.96em;
   padding-top: 0.5em;
   vertical-align: middle;
@@ -55,12 +64,14 @@
   margin: 0;
 }
 .calibre9 {
+  /* 文章一级标题末的括号及时间（楷体） */
   color: #951b2a;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   font-size: 0.77419em;
   font-weight: bold;
 }
 .calibre10 {
+  /* 正文 */
   display: block;
   font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
   line-height: 130%;
@@ -70,11 +81,13 @@
   text-indent: 2em;
 }
 .calibre11 {
+  /* 正文中注释符号的上标 */
   font-size: 0.75em;
   line-height: normal;
   vertical-align: super;
 }
 .calibre12 {
+  /* 文章大节标题，二级标题 ## */
   color: #951b2a;
   display: block;
   duokan-text-indent: 0;
@@ -88,6 +101,7 @@
   text-indent: 0;
 }
 .calibre13 {
+  /* 文章中节标题，三级标题 ### */
   color: #951b2a;
   display: block;
   duokan-text-indent: 0;
@@ -101,6 +115,7 @@
   text-indent: 0;
 }
 .calibre14 {
+  /* 文章正文引用-一般内容（仿宋） */
   color: #000;
   display: block;
   duokan-text-indent: 2em;
@@ -114,6 +129,7 @@
   margin: 0.35em 0;
 }
 .calibre15 {
+  /* 文章正文引用-对话/对子（楷体） */
   color: #000;
   display: block;
   duokan-text-indent: 2em;
@@ -127,6 +143,7 @@
   margin: 0.35em 0;
 }
 .calibre16 {
+  /* 序、跋、引言、结论、开幕词、闭幕词、汇编里各篇文章的二级标题末的括号及时间（楷体） */
   color: #951b2a;
   duokan-text-indent: 0;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
@@ -139,6 +156,7 @@
   text-indent: 0;
 }
 .calibre17 {
+  /* 文章小节标题，四级标题 #### */
   color: #951b2a;
   display: block;
   duokan-text-indent: 0;
@@ -152,14 +170,17 @@
   text-indent: 0;
 }
 .calibre18 {
+  /* 表格行组 */
   display: table-row-group;
   vertical-align: middle;
 }
 .calibre19 {
+  /* 表格行 */
   display: table-row;
   vertical-align: inherit;
 }
 .calibre20 {
+  /* 表格列单元格 */
   display: table-cell;
   text-align: center;
   vertical-align: middle;
@@ -168,23 +189,28 @@
   border-left: #000 solid 1px;
 }
 .calibre21 {
+  /* 表格页脚组 */
   display: table-footer-group;
   vertical-align: middle;
 }
 .calibre22 {
+  /* 就是正文，行高较高，不知道为什么，忽视 */
   font-size: 1em;
   line-height: 1.5;
   text-indent: 2em;
 }
 .calibre23 {
+  /* 正文一级标题括号内时间注释符号的上标 */
   font-size: 1em;
   line-height: normal;
   vertical-align: super;
 }
 .calibre24 {
+  /* 正文加粗 */
   font-weight: bold;
 }
 .calibre25 {
+  /* 一句话的正文（居中） */
   display: block;
   font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
   line-height: 130%;
@@ -194,6 +220,7 @@
   text-indent: 2em;
 }
 .calibre26 {
+  /* 前言后记的节标题（加粗楷体），二级标题 ## */
   display: block;
   duokan-text-indent: 0;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
@@ -206,6 +233,7 @@
   text-indent: 0;
 }
 .collaspe {
+  /* 表格整体 */
   border-collapse: separate;
   border-collaspe: collaspe;
   border-spacing: 2px;
@@ -221,10 +249,12 @@
   border-left: #000 solid 1px;
 }
 .duokan-footnote {
+  /* 正文和脚注中超链接 */
   color: black;
   text-decoration: none;
 }
 .duokan-footnote-content {
+  /* 正文中注释符号的列表 */
   display: block;
   list-style-position: outside;
   list-style-type: none;
@@ -237,9 +267,11 @@
   text-align: justify;
 }
 .duokan-footnote-item {
+  /* 正文中注释符号的列表项 */
   display: list-item;
 }
 .epigraph {
+  /* 正文中 div 标签，通常是小标题 */
   display: block;
   font-family: "zw";
   line-height: 130%;
@@ -248,6 +280,7 @@
   padding: 0;
 }
 .footnote {
+  /* 脚注中内容 */
   display: block;
   font-family: "kaiti";
   font-size: 1em;
@@ -257,6 +290,7 @@
   margin: 0;
 }
 .head {
+  /* 前言后记的标题，一级标题 # */
   display: block;
   font-family: FZMHJW;
   font-size: 1.29167em;
@@ -267,6 +301,7 @@
   padding: 11em 2px 2px 0;
 }
 .head-mzd {
+  /* 文章标题，一级标题 # */
   color: #951b2a;
   display: block;
   font-family: fzqkbysjt;
@@ -278,6 +313,7 @@
   padding: 11em 2px 2px 0;
 }
 .houjimowei {
+  /* 后记末尾的意见沟通渠道 */
   display: block;
   duokan-text-indent: 0;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
@@ -288,10 +324,12 @@
   text-indent: 0;
 }
 .mzd-cf-kt {
+  /* 正文对话的发言人名字及冒号，类似 underline2 */
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   font-weight: bold;
 }
 .mzd-shici-kt {
+  /* 毛泽东诗词 */
   display: block;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   line-height: 130%;
@@ -301,6 +339,7 @@
   text-indent: 2em;
 }
 .mzd-shici-tm-kt {
+  /* 毛泽东诗词题目 */
   display: block;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   font-weight: bold;
@@ -311,9 +350,11 @@
   text-indent: 2em;
 }
 .mzd-waishi-kt {
+  /* 外事-正文段落中混着的他人讲话（仿宋） */
   font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
 }
 .mzd-xw-kt {
+  /* 新闻报道、会议背景 */
   display: block;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   line-height: 130%;
@@ -323,6 +364,7 @@
   text-indent: 2em;
 }
 .mzd-xw-kt1 {
+  /* 未使用 */
   display: block;
   duokan-text-indent: 0;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
@@ -334,6 +376,7 @@
   text-indent: 0;
 }
 .picture {
+  /* 插图 div 标签，都是毛像 */
   display: block;
   duokan-text-indent: 0;
   font-family: "zw";
@@ -344,6 +387,7 @@
   padding: 0;
 }
 .post {
+  /* 正文仿宋，主要是前言后记里，也有文章里轻微强调和谈话记录的非正式引用，视为斜体处理 */
   display: block;
   font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
   line-height: 130%;
@@ -353,6 +397,7 @@
   text-indent: 2em;
 }
 .post1 {
+  /* 章节名，xxxx 时期，和 post2 一起出现 */
   display: none;
   font-size: 1.66667em;
   font-weight: bold;
@@ -360,6 +405,7 @@
   margin: 0.83em 0;
 }
 .post2 {
+  /* 章节名，xxxx 时期，和 post1 一起出现 */
   color: #951b2a;
   display: block;
   duokan-text-indent: 0;
@@ -374,6 +420,7 @@
   padding: 6px 3px;
 }
 .post3 {
+  /* 章节名，xxxx 时期后括号内的时期的阶段，，和 post2 一起出现 */
   color: #951b2a;
   display: block;
   duokan-text-indent: 0;
@@ -388,6 +435,7 @@
   padding: 6px 3px;
 }
 .sign {
+  /* 署名和日期，靠右 */
   display: block;
   duokan-text-indent: 0;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
@@ -397,10 +445,12 @@
   margin: 1em 0 0 auto;
 }
 .tepi {
+  /* 正文特批，一般是叹号结尾口号，也有表示强调。（红色）视同加粗 */
   color: #951b2a;
   font-weight: bold;
 }
 .underline {
+  /* 正文内括号内容 */
   color: #951b2a;
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   line-height: 130%;
@@ -408,10 +458,12 @@
   margin-right: 1%;
 }
 .underline1 {
+  /* 文章标题中的副标题（仿宋） */
   font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
   font-weight: bold;
 }
 .underline2 {
+  /* 正文对话的发言人名字及冒号，类似 mzd-cf-kt */
   font-family: "DK-KAITI", "kt", "楷体", "zw", serif;
   font-weight: bold;
   line-height: 130%;
@@ -419,6 +471,7 @@
   margin-right: 1%;
 }
 .xinjian-fs {
+  /* 包裹引用格式 calibre14、calibre15 一起出现 */
   display: block;
   font-family: "zw";
   line-height: 130%;
@@ -427,6 +480,7 @@
   padding: 0;
 }
 .xinjianmowei {
+  /* 信件末尾-顶格敬礼 */
   display: block;
   duokan-text-indent: 0;
   font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
@@ -437,6 +491,7 @@
   text-indent: 0;
 }
 .xinjianqishi {
+  /* 信件起始-顶格称呼 */
   display: block;
   duokan-text-indent: 0;
   font-family: "DK-FANGSONG", 仿宋, "fs", "fangsong", sans-serif;
