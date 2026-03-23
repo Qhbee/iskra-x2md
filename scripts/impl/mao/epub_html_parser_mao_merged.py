@@ -580,6 +580,15 @@ def parse_html_to_markdown(
             em.append(child.extract())
         p.append(em)
 
+    # 0.81 p.mzd-xw-kt（新闻报道、会议背景）→ 整段斜体 <em>（Markdown *）
+    for p in list(body.find_all("p", class_=lambda c: c and "mzd-xw-kt" in c)):
+        for bold in list(p.find_all(["b", "strong"])):
+            bold.unwrap()
+        em = soup.new_tag("em")
+        for child in list(p.children):
+            em.append(child.extract())
+        p.append(em)
+
     # 1. 收集图片，替换为占位符，保存到 assets
     assets_dir = article_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
