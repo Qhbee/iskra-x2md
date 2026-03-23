@@ -493,12 +493,31 @@ def _strip_atx_heading_emphasis_lines(text: str) -> str:
     return "\n".join(out_lines)
 
 
+def _normalize_table_tfoot_into_tbody(soup) -> None:
+    """
+    markdownify 对 tbody + tfoot 会输出空行、重复的 |---| 分隔行。
+    将 tfoot 内 tr 并入 tbody 末尾，去掉 tfoot，得到连续数据行（如「总计」接在表体后）。
+    """
+    for table in list(soup.find_all("table")):
+        tfoot = table.find("tfoot", recursive=False)
+        if not tfoot:
+            continue
+        tbody = table.find("tbody", recursive=False)
+        if tbody is None:
+            tbody = soup.new_tag("tbody")
+            table.insert(0, tbody)
+        for tr in list(tfoot.find_all("tr", recursive=False)):
+            tbody.append(tr.extract())
+        tfoot.decompose()
+
+
 def _postprocess_paragraph_breaks(text: str) -> str:
     """
     后处理：段落内不插入多余换行。
     目标：段落之间用 \\n\\n，段落内无多余空行。
     连续 blockquote 行（> 开头）之间只用 \\n，避免引用块内出现空行。
     连续 blockquote 行（含仅 \">\" 的段间空行）整段保留，不拆成空格合并。
+    管道表格行（| 开头）整段保留，避免被合并成一行。
     """
     lines = text.split("\n")
     result = []
@@ -528,6 +547,14 @@ def _postprocess_paragraph_breaks(text: str) -> str:
             flush_para()
             block = [stripped]
             while lines and lines[0].strip().startswith(">"):
+                block.append(lines.popleft().strip())
+            result.append("\n".join(block))
+            continue
+
+        if stripped.startswith("|"):
+            flush_para()
+            block = [stripped]
+            while lines and lines[0].strip().startswith("|"):
                 block.append(lines.popleft().strip())
             result.append("\n".join(block))
             continue
@@ -680,6 +707,9 @@ def parse_html_to_markdown(
         new_tag = soup.new_tag("span")
         new_tag.string = placeholder
         tag.replace_with(new_tag)
+
+    # 1.5 表格：tfoot 并入 tbody，避免 markdownify 重复表头分隔行与空行
+    _normalize_table_tfoot_into_tbody(soup)
 
     # 2. HTML -> Markdown
     body = soup.find("body")
