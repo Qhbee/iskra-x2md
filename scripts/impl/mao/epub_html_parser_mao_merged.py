@@ -59,6 +59,40 @@ def _normalize_heading_levels_in_soup(soup):
         tag.name = f"h{new_level}"
 
 
+def _convert_epigraph_calibre_headings(soup):
+    """
+    div.epigraph 内按静火/三合一 stylesheet 语义将小标题转为 h2/h3/h4：
+    calibre12 / calibre26 → ##（h2），calibre13 → ###（h3），calibre17 → ####（h4）。
+    calibre26 与 12 版式同级，多见于前言后记；转换后拆掉 epigraph 容器，避免 markdownify 多包一层 div。
+    """
+    body = soup.find("body") or soup
+    mapping = (
+        ("calibre12", 2),
+        ("calibre26", 2),
+        ("calibre13", 3),
+        ("calibre17", 4),
+    )
+    for ep in list(body.find_all("div", class_=lambda c: c and "epigraph" in c)):
+        for p in list(ep.find_all("p", recursive=False)):
+            classes = p.get("class") or []
+            level = None
+            for cls, lv in mapping:
+                if cls in classes:
+                    level = lv
+                    break
+            if level is None:
+                continue
+            h = soup.new_tag(f"h{level}")
+            for child in list(p.children):
+                h.append(child.extract())
+            p.replace_with(h)
+        # 拆掉 epigraph 容器，子节点整段前移（先快照再移动，避免迭代中 DOM 变化）
+        to_move = list(ep.contents)
+        for c in to_move:
+            ep.insert_before(c)
+        ep.decompose()
+
+
 def _convert_centered_subheadings(soup):
     """
     将 p.a5 和 p.a0+span.f3 转为居中小标题（h1-h6）。
@@ -263,8 +297,8 @@ def parse_html_to_markdown(
     # 0.5 标题层级归一：最高级提升为 h1，其余顺延（预处理，避免后处理多遍历）
     _normalize_heading_levels_in_soup(soup)
 
-    # 0.55 居中小标题：p.a5、p.a0+span.f3 → h1-h6，层级由前标题决定；h6 之后不转换、当正文
-    _convert_centered_subheadings(soup)
+    # 0.55 居中小标题：epigraph 内 calibre12/13/17 → h2/h3/h4（须在 0.5 之后，避免与「篇题 h3→h1」归一冲突）
+    _convert_epigraph_calibre_headings(soup)
 
     # 0.56 标题内 br 直接移除（避免多余空格）
     body = soup.find("body") or soup
