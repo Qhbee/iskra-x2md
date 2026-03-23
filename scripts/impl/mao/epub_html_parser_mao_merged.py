@@ -182,6 +182,129 @@ def _restructure_caption_style_blocks(soup):
             insert_after.insert_after(p_dt)
 
 
+def _iter_xinjian_fs_paragraphs(div):
+    """div.xinjian-fs 内所有 p.calibre14 / p.calibre15（生成器，按子节点顺序）。"""
+    for child in list(div.children):
+        if getattr(child, "name", None) != "p":
+            continue
+        cls = child.get("class") or []
+        if "calibre14" in cls or "calibre15" in cls:
+            yield child
+
+
+def _xinjian_fs_first_line_text(div) -> str:
+    for p in _iter_xinjian_fs_paragraphs(div):
+        return p.get_text(separator="", strip=True)
+    return ""
+
+
+def _is_qa_quote_line(text: str) -> bool:
+    """是否为「问：」「答：」开头的引用行（用于相邻块是否合并的判断）。"""
+    t = (text or "").lstrip()
+    return t.startswith("问：") or t.startswith("答：")
+
+
+def _prev_adjacent_xinjian_fs(div):
+    x = div.previous_sibling
+    while x is not None:
+        if isinstance(x, str) and not str(x).strip():
+            x = x.previous_sibling
+            continue
+        if getattr(x, "name", None) == "div" and "xinjian-fs" in (x.get("class") or []):
+            return x
+        return None
+    return None
+
+
+def _next_adjacent_xinjian_fs(div):
+    x = div.next_sibling
+    while x is not None:
+        if isinstance(x, str) and not str(x).strip():
+            x = x.next_sibling
+            continue
+        if getattr(x, "name", None) == "div" and "xinjian-fs" in (x.get("class") or []):
+            return x
+        return None
+    return None
+
+
+def _collect_xinjian_fs_chains(body):
+    """文档顺序下，仅相邻的 div.xinjian-fs 连成一条链（中间可有空白文本节点）。"""
+    seen = set()
+    chains = []
+    for div in body.find_all("div", class_=lambda c: c and "xinjian-fs" in c):
+        if id(div) in seen:
+            continue
+        head = div
+        while True:
+            p = _prev_adjacent_xinjian_fs(head)
+            if p is None:
+                break
+            head = p
+        chain = []
+        cur = head
+        while cur is not None:
+            chain.append(cur)
+            seen.add(id(cur))
+            cur = _next_adjacent_xinjian_fs(cur)
+        chains.append(chain)
+    return chains
+
+
+def _partition_xinjian_chain_for_blockquotes(chain):
+    """
+    一条相邻 xinjian-fs 链 → 多组 div 列表；每组合并为一个 <blockquote>。
+    规则：若上一段首行、本段首行均为「问：」或「答：」，则拆开（不合并）；
+    否则并入上一组（同一 blockquote 内多 <p>，markdownify 会输出 >…\\n>\\n>…）。
+    """
+    if not chain:
+        return []
+    groups = [[chain[0]]]
+    for i in range(1, len(chain)):
+        t_prev = _xinjian_fs_first_line_text(chain[i - 1])
+        t_curr = _xinjian_fs_first_line_text(chain[i])
+        if _is_qa_quote_line(t_prev) and _is_qa_quote_line(t_curr):
+            groups.append([chain[i]])
+        else:
+            groups[-1].append(chain[i])
+    return groups
+
+
+def _wrap_xinjian_fs_as_blockquotes(soup):
+    """
+    div.xinjian-fs 内 p.calibre14 / p.calibre15 → <blockquote>。
+    相邻 xinjian-fs：默认合并到同一 blockquote（多 <p>，导出为 > 段\\n>\\n> 段）；
+    仅当「上一块首行与下一块首行均为 问：/答：」时拆成独立 blockquote（问、答各段分开）。
+    """
+    body = soup.find("body") or soup
+
+    def _div_empty_or_ws(d):
+        for c in d.children:
+            if getattr(c, "name", None):
+                return False
+            if isinstance(c, str) and c.strip():
+                return False
+        return True
+
+    for chain in _collect_xinjian_fs_chains(body):
+        for group in _partition_xinjian_chain_for_blockquotes(chain):
+            movers = []
+            for div in group:
+                movers.extend(list(_iter_xinjian_fs_paragraphs(div)))
+            if not movers:
+                for div in group:
+                    if _div_empty_or_ws(div):
+                        div.decompose()
+                continue
+            bq = soup.new_tag("blockquote")
+            group[0].insert_before(bq)
+            for p in movers:
+                bq.append(p.extract())
+            for div in group:
+                if _div_empty_or_ws(div):
+                    div.decompose()
+
+
 def _convert_centered_subheadings(soup):
     """
     将 p.a5 和 p.a0+span.f3 转为居中小标题（h1-h6）。
@@ -311,6 +434,7 @@ def _postprocess_paragraph_breaks(text: str) -> str:
     后处理：段落内不插入多余换行。
     目标：段落之间用 \\n\\n，段落内无多余空行。
     连续 blockquote 行（> 开头）之间只用 \\n，避免引用块内出现空行。
+    连续 blockquote 行（含仅 \">\" 的段间空行）整段保留，不拆成空格合并。
     """
     lines = text.split("\n")
     result = []
@@ -408,63 +532,10 @@ def parse_html_to_markdown(
                 strong.append(child.extract())
             span.replace_with(strong)
 
-    # 0.6 引用段落：p.a3 连续合并为一个 blockquote；p.a31 不合并，每个单独 blockquote（问/答独立）
-    def _quote_type(tag):
-        if tag.name != "p":
-            return None
-        c = tag.get("class", [])
-        if not c:
-            return None
-        return "a31" if "a31" in c else ("a3" if "a3" in c else None)
+    # 0.6 引用段落：div.xinjian-fs 内 calibre14/15 → blockquote（> 引用）
+    _wrap_xinjian_fs_as_blockquotes(soup)
 
     div = soup.find("div", class_="div") or soup.find("body") or soup
-    all_p = div.find_all("p", recursive=True)
-
-    # a3：连续合并
-    for qt, group in groupby(all_p, key=_quote_type):
-        if qt != "a3":
-            continue
-        group = list(group)
-        if not group:
-            continue
-        bq = soup.new_tag("blockquote")
-        group[0].insert_before(bq)
-        for p in group:
-            bq.append(p.extract())
-
-    # a31：不合并；含 <br/> 的答分段为多个 p，段间有 > 空行，续行加前导空格
-    for p in list(div.find_all("p", class_=lambda c: c and "a31" in c)):
-        brs = p.find_all("br")
-        if not brs:
-            bq = soup.new_tag("blockquote")
-            p.wrap(bq)
-            continue
-        # 按 br 分段（不修改 DOM，避免空分段时破坏 p）
-        segments = []
-        current = []
-        for child in p.children:
-            if getattr(child, "name", None) == "br":
-                if current:
-                    seg = BeautifulSoup("".join(str(c) for c in current), "html.parser").get_text(separator="", strip=True)
-                    if seg:
-                        segments.append(seg)
-                    current = []
-            else:
-                current.append(child)
-        if current:
-            seg = BeautifulSoup("".join(str(c) for c in current), "html.parser").get_text(separator="", strip=True)
-            if seg:
-                segments.append(seg)
-        if not segments:
-            bq = soup.new_tag("blockquote")
-            p.wrap(bq)
-            continue
-        bq = soup.new_tag("blockquote")
-        for idx, seg in enumerate(segments):
-            new_p = soup.new_tag("p")
-            new_p.string = (" " + seg) if idx > 0 else seg
-            bq.append(new_p)
-        p.replace_with(bq)
 
     # 0.8 p.a2（右侧落款签名/日期）→ 斜体
     for p in list(div.find_all("p", class_=lambda c: c and "a2" in c)):
