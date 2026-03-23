@@ -422,6 +422,40 @@ def _resolve_img_src(src: str, base_href: str) -> str:
     return "/".join(resolved)
 
 
+def _strip_outer_md_emphasis(s: str) -> str:
+    """去掉字符串外侧成对的 *** / ** / *（markdownify 常在 # 标题外包 strong/em）。"""
+    t = s.strip()
+    while t:
+        if len(t) >= 6 and t.startswith("***") and t.endswith("***"):
+            t = t[3:-3].strip()
+        elif len(t) >= 4 and t.startswith("**") and t.endswith("**"):
+            t = t[2:-2].strip()
+        elif (
+            len(t) >= 2
+            and t.startswith("*")
+            and not t.startswith("**")
+            and t.endswith("*")
+            and not t.endswith("**")
+        ):
+            t = t[1:-1].strip()
+        else:
+            break
+    return t
+
+
+def _strip_atx_heading_emphasis_lines(text: str) -> str:
+    """ATX 标题行：去掉 # 与正文之间多余的 *、** 包裹。"""
+    out_lines = []
+    pat = re.compile(r"^(\s*)(#{1,6})(\s+)(.*)$")
+    for line in text.split("\n"):
+        m = pat.match(line)
+        if m:
+            ws, hashes, sp, title = m.groups()
+            line = f"{ws}{hashes}{sp}{_strip_outer_md_emphasis(title)}"
+        out_lines.append(line)
+    return "\n".join(out_lines)
+
+
 def _postprocess_paragraph_breaks(text: str) -> str:
     """
     后处理：段落内不插入多余换行。
@@ -607,6 +641,8 @@ def parse_html_to_markdown(
 
     # 4. 后处理：段落内多余换行
     md_text = _postprocess_paragraph_breaks(md_text)
+    # 4.1 标题行去掉 markdownify 产生的 ** / * 外壳（# ## ### 后不要强调标记）
+    md_text = _strip_atx_heading_emphasis_lines(md_text)
 
     # 5. 追加脚注块（与马列 PDF 输出一致）
     if footnote_block:
