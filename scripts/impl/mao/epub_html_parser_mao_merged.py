@@ -93,6 +93,95 @@ def _convert_epigraph_calibre_headings(soup):
         ep.decompose()
 
 
+def _caption_block_start_index(children, node):
+    """node 在 container 的第几个顶层子块开始（直接子或某子树内）。"""
+    if node is None:
+        return None
+    if node in children:
+        return children.index(node)
+    for i, c in enumerate(children):
+        if getattr(c, "name", None) and node in c.descendants:
+            return i
+    return None
+
+
+def _restructure_caption_style_blocks(soup):
+    """
+    按 stylesheet 语义统一拆「标题行 + 副标题 + 日期」，不区分 head / head-mzd：
+    - span.underline1：副标题 → 紧跟的独立段落 <strong>…</strong>（Markdown **）
+    - b.calibre9 / b.calibre16：日期等 → 再一段 <em>…</em>（Markdown *斜体*，去掉 b 粗体）
+    - 主行：上述块之前的节点（含脚注 [^n]）；内部仅版式用的 <br> 丢弃（中文折行直接相接）
+
+    作用范围：所有 h1–h6；以及含 calibre12 的 p（如第七卷汇编篇目列表）。
+    须在脚注替换、标题层级归一、epigraph→标题 之后执行。
+    """
+    body = soup.find("body") or soup
+
+    def _is_date_b(classes):
+        if not classes:
+            return False
+        return "calibre9" in classes or "calibre16" in classes
+
+    candidates = []
+    candidates.extend(body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]))
+    candidates.extend(body.find_all("p", class_=lambda c: c and "calibre12" in c))
+
+    for tag in list(candidates):
+        u = tag.find("span", class_=lambda c: c and "underline1" in c)
+        b_meta = tag.find("b", class_=lambda c: _is_date_b(c or []))
+        if u is None and b_meta is None:
+            continue
+
+        subtitle_text = ""
+        if u is not None:
+            for br in list(u.find_all("br")):
+                br.replace_with("")
+            subtitle_text = u.get_text(separator="", strip=True)
+
+        date_text = ""
+        if b_meta is not None:
+            date_text = b_meta.get_text(separator="", strip=True)
+
+        children = list(tag.children)
+        iu = _caption_block_start_index(children, u)
+        ib = _caption_block_start_index(children, b_meta)
+        idxs = [x for x in (iu, ib) if x is not None]
+        if not idxs:
+            continue
+        split_i = min(idxs)
+
+        head_chunks = []
+        for c in children[:split_i]:
+            if getattr(c, "name", None) == "br":
+                continue
+            head_chunks.append(c)
+
+        for c in children[split_i:]:
+            if getattr(c, "name", None):
+                c.decompose()
+            else:
+                c.extract()
+
+        tag.clear()
+        for ch in head_chunks:
+            tag.append(ch)
+
+        insert_after = tag
+        if subtitle_text:
+            p_sub = soup.new_tag("p")
+            st = soup.new_tag("strong")
+            st.append(NavigableString(subtitle_text))
+            p_sub.append(st)
+            insert_after.insert_after(p_sub)
+            insert_after = p_sub
+        if date_text:
+            p_dt = soup.new_tag("p")
+            em = soup.new_tag("em")
+            em.append(NavigableString(date_text))
+            p_dt.append(em)
+            insert_after.insert_after(p_dt)
+
+
 def _convert_centered_subheadings(soup):
     """
     将 p.a5 和 p.a0+span.f3 转为居中小标题（h1-h6）。
@@ -300,6 +389,9 @@ def parse_html_to_markdown(
     # 0.55 居中小标题：epigraph 内 calibre12/13/17 → h2/h3/h4（须在 0.5 之后，避免与「篇题 h3→h1」归一冲突）
     _convert_epigraph_calibre_headings(soup)
 
+    # 0.551 标题/汇编行：underline1→下一段 **；calibre9/16→再一段 *（见 _restructure_caption_style_blocks）
+    _restructure_caption_style_blocks(soup)
+
     # 0.56 标题内 br 直接移除（避免多余空格）
     body = soup.find("body") or soup
     for h in body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
@@ -373,25 +465,6 @@ def parse_html_to_markdown(
             new_p.string = (" " + seg) if idx > 0 else seg
             bq.append(new_p)
         p.replace_with(bq)
-
-    # 0.7 p.a0 + span.f2（日期/副标题）→ 斜体
-    # 三种情况
-    # --- OEBPS/Text/Section0647.xhtml ---
-    #     15 | <p class="a0"><span class="f2">（一九五五年九月、十二月）</span></p>
-    #     19 | <p class="a0"><span class="f2 t61">（一九五五年九月二十五日）</span></p>
-    # --- OEBPS/Text/Section0215.xhtml ---
-    #     15 | <p class="a0"><span class="f2 t63">论认识和实践的关系<br/>——知和行的关系</span></p>
-    #     17 | <p class="a0"><span class="f2">（一九三七年七月）</span></p>
-    # t63 是真副标题，也 * * 斜体
-    # t61 是序、跋这种二级标题的小号字日期，也 * * 斜体
-    # 不管 span.t63, span.t61，只要 p.a0 + span.f2 就  * * 斜体
-    for p in list(div.find_all("p", class_=lambda c: c and "a0" in c)):
-        if p.find(class_=lambda c: c and "f2" in c) is None:
-            continue
-        em = soup.new_tag("em")
-        for child in list(p.children):
-            em.append(child.extract())
-        p.append(em)
 
     # 0.8 p.a2（右侧落款签名/日期）→ 斜体
     for p in list(div.find_all("p", class_=lambda c: c and "a2" in c)):
