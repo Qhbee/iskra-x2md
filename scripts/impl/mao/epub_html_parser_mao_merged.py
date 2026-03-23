@@ -305,6 +305,43 @@ def _wrap_xinjian_fs_as_blockquotes(soup):
                     div.decompose()
 
 
+def _is_section09041_xhtml(base_href: str) -> bool:
+    """《读苏联社会主义经济问题》谈话，仅此篇对 p.post 作 blockquote 处理。"""
+    name = Path(base_href.replace("\\", "/")).name.lower()
+    return name == "section09041.xhtml"
+
+
+def _wrap_section09041_post_as_blockquotes(soup, base_href: str) -> None:
+    """
+    特例 Section09041：p.post（斯大林/列宁引文）→ blockquote（Markdown >）。
+    body 下相邻的 p.post 合并进同一 blockquote（多 <p> → > 段\\n>\\n> 段）。
+    其他文件中的 p.post 仍为普通段落，不受影响。
+    """
+    if not _is_section09041_xhtml(base_href):
+        return
+    body = soup.find("body") or soup
+
+    def _flush_post_group(group: list) -> None:
+        if not group:
+            return
+        bq = soup.new_tag("blockquote")
+        group[0].insert_before(bq)
+        for p in group:
+            bq.append(p.extract())
+
+    cur: list = []
+    for child in list(body.children):
+        # 忽略 body 下仅换行/空白的文本节点，否则会打断相邻 p.post 的合并
+        if isinstance(child, NavigableString) and not str(child).strip():
+            continue
+        if getattr(child, "name", None) == "p" and "post" in (child.get("class") or []):
+            cur.append(child)
+            continue
+        _flush_post_group(cur)
+        cur = []
+    _flush_post_group(cur)
+
+
 def _footnote_plain_text_from_p(p_fn) -> str:
     """
     从脚注 p 节点取纯文本：<br> 保留为换行（等同旧版 zs1 续段仍在同一注内）；
@@ -561,6 +598,9 @@ def parse_html_to_markdown(
 
     # 0.6 引用段落：div.xinjian-fs 内 calibre14/15 → blockquote（> 引用）
     _wrap_xinjian_fs_as_blockquotes(soup)
+
+    # 0.65 特例 Section09041：相邻 p.post（斯大林/列宁引文）→ 合并 blockquote（> / 空 > 续段）
+    _wrap_section09041_post_as_blockquotes(soup, base_href)
 
     # 0.7 span.tepi（正文特批/强调，stylesheet 加粗）→ <strong>（Markdown **）
     for span in list(body.find_all("span", class_=lambda c: c and "tepi" in c)):
