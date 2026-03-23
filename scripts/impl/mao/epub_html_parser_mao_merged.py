@@ -569,6 +569,13 @@ def parse_html_to_markdown(
             strong.append(child.extract())
         span.replace_with(strong)
 
+    # 0.75 span.mzd-waishi-kt（外事·他人讲话仿宋）→ <em>（Markdown *）
+    for span in list(body.find_all("span", class_=lambda c: c and "mzd-waishi-kt" in c)):
+        em = soup.new_tag("em")
+        for child in list(span.children):
+            em.append(child.extract())
+        span.replace_with(em)
+
     # 0.8 （右侧落款签名/日期）→ 斜体
     # stylesheet：p.sign（署名日期）、p.houjimowei（后记意见渠道）为斜体 → <em>（Markdown *）
     for p in list(body.find_all("p", class_=lambda c: c and ("sign" in c or "houjimowei" in c))):
