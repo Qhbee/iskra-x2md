@@ -586,16 +586,6 @@ def parse_html_to_markdown(
         for br in h.find_all("br"):
             br.decompose()
 
-    # 0.57 Volume 封面「毛泽东选集」→ 加粗（span 含 c31 f1 t67 t42 全匹配）
-    vol_cover_classes = ("c31", "f1", "t67", "t42")
-    for p in body.find_all("p", class_=lambda c: c and "a0" in c and "t94" in c):
-        span = p.find("span", class_=lambda c: c and all(k in c for k in vol_cover_classes))
-        if span:
-            strong = soup.new_tag("strong")
-            for child in list(span.children):
-                strong.append(child.extract())
-            span.replace_with(strong)
-
     # 0.6 引用段落：div.xinjian-fs 内 calibre14/15 → blockquote（> 引用）
     _wrap_xinjian_fs_as_blockquotes(soup)
 
