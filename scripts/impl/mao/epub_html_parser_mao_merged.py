@@ -535,10 +535,12 @@ def parse_html_to_markdown(
     # 0.6 引用段落：div.xinjian-fs 内 calibre14/15 → blockquote（> 引用）
     _wrap_xinjian_fs_as_blockquotes(soup)
 
-    div = soup.find("div", class_="div") or soup.find("body") or soup
-
-    # 0.8 p.a2（右侧落款签名/日期）→ 斜体
-    for p in list(div.find_all("p", class_=lambda c: c and "a2" in c)):
+    # 0.8 （右侧落款签名/日期）→ 斜体
+    # stylesheet：p.sign（署名日期）、p.houjimowei（后记意见渠道）为斜体 → <em>（Markdown *）
+    for p in list(body.find_all("p", class_=lambda c: c and ("sign" in c or "houjimowei" in c))):
+        # 去掉内层 b/strong，避免 <em><b> 转成 *** 混排
+        for bold in list(p.find_all(["b", "strong"])):
+            bold.unwrap()
         em = soup.new_tag("em")
         for child in list(p.children):
             em.append(child.extract())
