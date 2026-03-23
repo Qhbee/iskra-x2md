@@ -305,6 +305,38 @@ def _wrap_xinjian_fs_as_blockquotes(soup):
                     div.decompose()
 
 
+def _footnote_plain_text_from_p(p_fn) -> str:
+    """
+    从脚注 p 节点取纯文本：<br> 保留为换行（等同旧版 zs1 续段仍在同一注内）；
+    仅压缩各行内空白，不把换行并成空格。
+    """
+    for br in p_fn.find_all("br"):
+        br.replace_with("\n")
+    raw = p_fn.get_text(separator="", strip=False)
+    lines = []
+    for line in raw.split("\n"):
+        lines.append(re.sub(r"[ \t\r\f\v]+", " ", line).strip())
+    text = "\n".join(lines)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def _format_markdown_footnote_def(num: int, body: str) -> str:
+    """[^n]: 首行 + 续行四空格缩进；段与段之间空一行（与 EPUB 内 <br> 分段一致）。"""
+    body = (body or "").strip()
+    if not body:
+        return f"[^{num}]: "
+    if "\n" not in body:
+        return f"[^{num}]: {body}"
+    lines = body.split("\n")
+    first = lines[0]
+    rest = []
+    for ln in lines[1:]:
+        rest.append("    " + ln if ln else "    ")
+    # 首段与续段、续段之间各空一行，便于阅读且符合脚注多段习惯
+    return f"[^{num}]: {first}\n\n" + "\n\n".join(rest)
+
+
 def _convert_footnotes_to_markdown(soup) -> str:
     """
     将三合一毛选 EPUB 的注释格式转为 Markdown 脚注（与马列 PDF 输出一致）。
@@ -315,6 +347,8 @@ def _convert_footnotes_to_markdown(soup) -> str:
     - 文末 li 的 id 与文内 href（如 #ref_footnotebookmark_end_1_1、#A-9）对应
     - li 内 p.footnote 首段 a.duokan-footnote（◎）仅作标记，不写入 [^n]: 正文
     - 正文 [^n]，文末 [^n]: 全文；序号按 ol 中 li 顺序从 1 递增
+    - 脚注正文内 <br> 保留为换行，仍属同一条 [^n]:（续行 Markdown 四空格缩进）
+    - 同一 li 内多个 p.footnote 用空行拼接（少见，等同分段续注）
     """
     body = soup.find("body") or soup
     href_to_num: dict[str, int] = {}
@@ -329,21 +363,22 @@ def _convert_footnotes_to_markdown(soup) -> str:
             li_id = li.get("id")
             if li_id:
                 href_to_num[li_id] = idx
-            p_fn = li.find("p", class_=lambda c: c and "footnote" in (c or []))
-            if not p_fn:
-                p_fn = li.find("p")
-            text = ""
-            if p_fn:
+            paras = li.find_all("p", class_=lambda c: c and "footnote" in (c or []))
+            if not paras:
+                p0 = li.find("p")
+                paras = [p0] if p0 else []
+            chunks: list[str] = []
+            for p_fn in paras:
+                if not p_fn:
+                    continue
                 for a in p_fn.find_all("a", class_="duokan-footnote"):
                     h = (a.get("href") or "").lstrip("#")
                     if h:
                         href_to_num[h] = idx
                 for a in list(p_fn.find_all("a", class_="duokan-footnote")):
                     a.decompose()
-                for br in p_fn.find_all("br"):
-                    br.replace_with("\n")
-                text = p_fn.get_text(separator="", strip=True)
-                text = re.sub(r"\s+", " ", text).strip()
+                chunks.append(_footnote_plain_text_from_p(p_fn))
+            text = "\n\n".join(c for c in chunks if c)
             footnote_defs.append((idx, text))
         ol.decompose()
 
@@ -364,7 +399,7 @@ def _convert_footnotes_to_markdown(soup) -> str:
         else:
             a.replace_with(repl)
 
-    lines = [f"[^{i}]: {t}" for i, t in sorted(footnote_defs, key=lambda x: x[0])]
+    lines = [_format_markdown_footnote_def(i, t) for i, t in sorted(footnote_defs, key=lambda x: x[0])]
     return "\n\n".join(lines) if lines else ""
 
 
