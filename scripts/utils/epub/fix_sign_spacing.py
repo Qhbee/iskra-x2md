@@ -26,12 +26,13 @@
   U+3000 '　' IDEOGRAPHIC SPACE（全角空格）。可视。与汉字等宽（东亚排版「一格」）。
   U+FEFF '﻿' ZERO WIDTH NO-BREAK SPACE（亦作 BOM）。零宽；UTF-8 文件开头常见，正文内较少当空格用。
 
-  本脚本当前：职务与姓名之间压成 TITLE_NAME_GAP（默认 U+3000）；SP / EDGE_STRIP 还认 U+2003、U+00A0 等以便归一。
+  本脚本当前：职务与姓名之间压成 TITLE_NAME_GAP（默认 U+3000）。
+  SP / EDGE_STRIP 还认：U+00A0、U+2002–U+200B、U+202F、U+205F、U+3000、U+2003、U+FEFF（首尾）等，与 probe_em_space.py 探测集合对齐（不含 U+0020 单独列入 SP，用 [ \\t]）。
 ----------------------------------------------------------------------
 
 规则概要：
 - 只处理 class 含 sign 的 <p>（可带其它 class）。
-- 首尾去掉各类空白（半角、全角 U+3000、EM SPACE U+2003、NBSP 等）。
+- 首尾去掉各类空白（见下方 _WS_EXTRA：NBSP、U+2002–U+200B、窄不换行、MMSP、全角、EM、BOM 等 + 半角空白）。
 - 先按固定模式合并常见姓名：毛·泽·东、周·恩·来、林·彪、中·央、朱·德、彭·德·怀（·表示任意允许空白）。
 - 再扫描「CJK — 空白 — CJK」：
   - 若整段前缀以职务/头衔后缀结尾（见 TITLE_SUFFIXES），则该处连续空白压成 **一个 U+3000**（全角空格，与中文书中「主席　毛泽东」常见排法一致）。
@@ -67,9 +68,13 @@ WRITE_CHANGES = False
 
 TEXT_SUFFIXES = {".xhtml", ".html", ".htm"}
 
-# 半角空白、全角、EM、NBSP（不含换行，避免跨段误合并）
-EDGE_STRIP = re.compile(r"^[\s\u3000\u2003\u00a0]+|[\s\u3000\u2003\u00a0]+$", re.MULTILINE)
-SP = r"(?:[ \t]|\u3000|\u2003|\u00a0)+"
+# 各类非常规空白 + 半角空白（不含换行，避免跨段误合并）；与 probe_em_space.py 一致
+_WS_EXTRA = "\u00a0\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u200b\u202f\u205f\u3000"
+EDGE_STRIP = re.compile(
+    rf"^[\s{_WS_EXTRA}\ufeff]+|[\s{_WS_EXTRA}\ufeff]+$",
+    re.MULTILINE,
+)
+SP = rf"(?:[ \t]|{_WS_EXTRA}|\ufeff)+"
 # 职务与姓名之间的单一分隔符（全角空格，与汉字等宽）
 TITLE_NAME_GAP = "\u3000"
 
