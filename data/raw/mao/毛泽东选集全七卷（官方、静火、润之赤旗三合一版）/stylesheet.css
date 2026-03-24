@@ -502,3 +502,76 @@
   text-align: justify;
   text-indent: 0;
 }
+
+/* Contents.xhtml 全书目录（由 gen_epub_contents_xhtml_merged.py 生成）
+   层级与静火版 OEBPS/Styles 中 .toc1/.toc2/.toc3 一致；卷名红色用全书标题色 #951b2a */
+.contents-root .contents-div {
+  display: block;
+  font-family: "DK-SONGTI", "st", "宋体", "zw", sans-serif;
+  margin: 0.35em 0 1.25em;
+}
+.contents-root .contents-title {
+  display: block;
+  font-size: 1.5em;
+  font-weight: bolder;
+  line-height: 1.35;
+  text-align: center;
+  margin: 0.6em 0 0.75em;
+}
+.contents-root .contents-title-span {
+  font-weight: bolder;
+}
+/* 一级：各卷（对应静火 .toc1 为红色黑体加粗；本 EPUB 未打包 ht 字体，用系统黑体族栈） */
+.contents-root .toc1 {
+  border: 0;
+  display: block;
+  font-family: 黑体, "SimHei", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+  font-size: 1.15em;
+  font-weight: bolder;
+  line-height: 1.3;
+  margin: 0.35em 0 0 0;
+  padding: 0;
+  text-indent: 0;
+  color: #951b2a;
+}
+/* 二级：时期、扉页类（对应静火 .toc2：加粗 + 左缩进） */
+.contents-root .toc2 {
+  border: 0;
+  display: block;
+  font-size: 1.02em;
+  font-weight: bold;
+  line-height: 1.3;
+  margin: 0.12em 0 0 2em;
+  padding: 0;
+  text-indent: 0;
+  color: #000;
+}
+/* 三级：篇目（对应静火 .toc3：常规 + 更深缩进） */
+.contents-root .toc3 {
+  border: 0;
+  display: block;
+  font-size: 1em;
+  font-weight: normal;
+  line-height: 1.3;
+  margin: 0.06em 0 0 6em;
+  padding: 0;
+  text-indent: 0;
+  color: #000;
+}
+.contents-root a.contents-a {
+  text-decoration: none;
+  color: inherit;
+}
+.contents-root a.contents-a:hover {
+  text-decoration: underline;
+}
+/* 三级悬停：下划线更细（需阅读器支持 text-decoration-thickness；不支持时仍为普通下划线） */
+.contents-root .toc3 a.contents-a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: 2px;
+}
+.contents-root a.vol-link {
+  font-weight: bolder;
+  color: #951b2a;
+}

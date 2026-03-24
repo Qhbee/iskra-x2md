@@ -18,6 +18,7 @@
     <item id="titlepage" href="titlepage.xhtml" media-type="application/xhtml+xml"/>
     <item id="Epigraph.xhtml" href="OEBPS/Text/Epigraph.xhtml" media-type="application/xhtml+xml"/>
     <item id="portrait.xhtml" href="OEBPS/Text/portrait.xhtml" media-type="application/xhtml+xml"/>
+    <item id="Contents.xhtml" href="OEBPS/Text/Contents.xhtml" media-type="application/xhtml+xml"/>
     <item id="Volume01.xhtml" href="OEBPS/Text/Volume01.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface01.xhtml" href="OEBPS/Text/Preface01.xhtml" media-type="application/xhtml+xml"/>
     <item id="Preface02.xhtml" href="OEBPS/Text/Preface02.xhtml" media-type="application/xhtml+xml"/>
@@ -680,6 +681,7 @@
     <itemref idref="titlepage"/>
     <itemref idref="Epigraph.xhtml"/>
     <itemref idref="portrait.xhtml"/>
+    <itemref idref="Contents.xhtml"/>
     <itemref idref="Volume01.xhtml"/>
     <itemref idref="Preface01.xhtml"/>
     <itemref idref="Preface02.xhtml"/>
@@ -1322,6 +1324,7 @@
     <itemref idref="Afterword02.xhtml"/>
   </spine>
   <guide>
+    <reference type="toc" href="OEBPS/Text/Contents.xhtml" title="目录"/>
     <reference type="epigraph" href="OEBPS/Text/Epigraph.xhtml" title="Epigraph"/>
     <reference type="cover" href="titlepage.xhtml" title="Cover"/>
   </guide>
