@@ -6,6 +6,7 @@ EPUB 转 Markdown：按 spine 顺序逐 HTML 转换，输出 Page Bundles（inde
 """
 
 import os
+import posixpath
 import sys
 
 # Windows 控制台 UTF-8 输出，避免 UnicodeEncodeError
@@ -195,38 +196,121 @@ def _resolve_href_to_path(href: str, href_to_dir: dict) -> Path | None:
     return None
 
 
-def _extract_toc_entries_ordered(book) -> list:
-    """从 toc 按顺序提取 (href, title, level)，用于生成目录"""
-    entries = []
+def _contents_link_to_spine_href(link_href: str) -> str:
+    """Contents.xhtml 内相对链接 → 包内路径（与 spine item 的 file_name 可比对）。"""
+    link_href = (link_href or "").split("#")[0].strip()
+    if not link_href:
+        return ""
+    base_dir = "OEBPS/Text"
+    full = posixpath.normpath(posixpath.join(base_dir, link_href))
+    return full.replace("\\", "/")
 
-    def walk(toc_entries, level: int):
-        for entry in toc_entries or []:
-            if isinstance(entry, (list, tuple)) and len(entry) >= 2:
-                section, children = entry[0], entry[1]
-                sect_title = str(getattr(section, "title", str(section)))
-                for attr in ("href", "content", "file_name"):
-                    if hasattr(section, attr):
-                        val = getattr(section, attr)
-                        if val:
-                            h = (str(val) or "").split("#")[0].strip()
-                            if h:
-                                entries.append((h, sect_title, level))
-                            break
-                walk(children, level + 1)
-                continue
-            if hasattr(entry, "href") and hasattr(entry, "title"):
-                h = (entry.href or "").split("#")[0].strip()
-                if h:
-                    entries.append((h, str(entry.title or "未命名"), level))
-                continue
-            if hasattr(entry, "get_name"):
-                h = (entry.get_name() or "").split("#")[0].strip()
-                if h:
-                    entries.append((h, str(getattr(entry, "title", "未命名")), level))
 
-    if isinstance(book.toc, (list, tuple)):
-        walk(book.toc, 0)
-    return entries
+def _get_contents_xhtml_bytes(get_item_fn) -> bytes | None:
+    for h in ("OEBPS/Text/Contents.xhtml", "Text/Contents.xhtml"):
+        item = get_item_fn(h)
+        if item is not None:
+            raw = item.get_content()
+            if isinstance(raw, str):
+                raw = raw.encode("utf-8", errors="replace")
+            return raw
+    return None
+
+
+def _parse_contents_xhtml_toc(html_bytes: bytes) -> list[tuple[str, str, int]]:
+    """
+    解析 Contents.xhtml 中 <p class="toc1|toc2|toc3"> 条目。
+    返回 [(标题, 链接 href, 缩进层级 0..2)]，顺序与 xhtml 一致。
+    """
+    soup = BeautifulSoup(html_bytes, "html.parser")
+    out: list[tuple[str, str, int]] = []
+    for p in soup.find_all("p"):
+        classes = p.get("class") or []
+        if isinstance(classes, str):
+            classes = [classes]
+        if "toc1" in classes:
+            level = 0
+        elif "toc2" in classes:
+            level = 1
+        elif "toc3" in classes:
+            level = 2
+        else:
+            continue
+        a = p.find("a", href=True)
+        if not a:
+            continue
+        title = a.get_text(strip=True)
+        href = (a.get("href") or "").strip()
+        if title and href:
+            out.append((title, href, level))
+    return out
+
+
+def _try_build_toc_from_contents_xhtml(
+    html_bytes: bytes,
+    contents_article_dir: Path,
+    href_to_article_dir: dict,
+) -> tuple[list[str], int] | None:
+    """成功则返回 (lines, count)；任一条无法映射到输出目录则返回 None（由调用方回退 spine）。"""
+    entries = _parse_contents_xhtml_toc(html_bytes)
+    if not entries:
+        return None
+    # Contents.xhtml 里封面/扉页/肖像/目录为 toc2，但 MD 目录希望与「第一卷」同级顶格（不缩进）
+    first_toc1_idx: int | None = None
+    for i, e in enumerate(entries):
+        if e[2] == 0:
+            first_toc1_idx = i
+            break
+    lines: list[str] = ["# 目　录", ""]
+    for i, (title, link_href, level) in enumerate(entries):
+        spine_href = _contents_link_to_spine_href(link_href)
+        art_dir = _resolve_href_to_path(spine_href, href_to_article_dir)
+        if art_dir is None:
+            art_dir = _resolve_href_to_path(link_href, href_to_article_dir)
+        if art_dir is None:
+            return None
+        if art_dir.resolve() == contents_article_dir.resolve():
+            rel_raw = "index.md"
+        else:
+            rel_raw = os.path.relpath(
+                str(art_dir / "index.md"), str(contents_article_dir)
+            ).replace("\\", "/")
+        rel_str = rel_raw.replace(" ", "%20")
+        md_level = 0 if (first_toc1_idx is not None and i < first_toc1_idx) else level
+        indent = "  " * md_level
+        lines.append(f"{indent}- [{title}]({rel_str})")
+    return lines, len(entries)
+
+
+def _build_toc_lines_from_spine(
+    spine_docs: list,
+    contents_article_dir: Path,
+    href_to_article_dir: dict,
+) -> tuple[list[str], int]:
+    lines = ["# 目　录", ""]
+    toc_n = 0
+    for d in spine_docs:
+        href = d.get("href", "") or ""
+        if not href:
+            continue
+        title = d.get("title", "") or Path(href).stem
+        cat = (d.get("category") or "").strip()
+        level = len([p for p in cat.split("/") if p]) if cat else 0
+        art_dir = _resolve_href_to_path(href, href_to_article_dir)
+        if art_dir is None:
+            print(f"⚠️ 目录跳过（未解析到输出目录）: {href}")
+            continue
+        if art_dir.resolve() == contents_article_dir.resolve():
+            rel_raw = "index.md"
+        else:
+            rel_raw = os.path.relpath(
+                str(art_dir / "index.md"), str(contents_article_dir)
+            ).replace("\\", "/")
+        rel_str = rel_raw.replace(" ", "%20")
+        indent = "  " * level
+        lines.append(f"{indent}- [{title}]({rel_str})")
+        toc_n += 1
+    return lines, toc_n
 
 
 def _href_in_nav(href: str, nav_map: dict) -> bool:
@@ -469,37 +553,33 @@ def main():
         except Exception as e:
             print(f"{indent}❌ 失败: {e}")
 
-    # 生成目录页（方案 A：从 toc 或 spine 自动生成，链接到真实 md）
-    # 备选方案 B：目录由 gen_toc_from_output.py 后处理生成（扫描实际输出，夹逼/漏掉的文章都能正确反映）
+    # 目录页：优先按 EPUB 内 Contents.xhtml（与电子书「目录」页结构一致：前置封面/扉页/肖像/目录、卷级红色等）；
+    # 若无 Contents 或任一条链接无法映射到已生成的 md，则回退为 spine 全量（与每个 xhtml 一一对应）。
     if contents_article_dir:
-        toc_entries = _extract_toc_entries_ordered(book)
-        if not toc_entries:
-            # ebooklib toc 可能为空或结构不同，回退到 spine 顺序 + category 层级
-            toc_entries = []
-            for d in spine_docs:
-                href = d.get("href", "")
-                if not href or Path(href).stem == "Contents":
-                    continue
-                title = d.get("title", "")
-                cat = (d.get("category") or "").strip()
-                level = len([p for p in cat.split("/") if p]) if cat else 0
-                toc_entries.append((href, title, level))
-        lines = ["# 目　录", ""]
-        for href, title, level in toc_entries:
-            art_dir = _resolve_href_to_path(href, href_to_article_dir)
-            if art_dir is None:
-                continue
-            # 04. 目录 与 05. 第一卷 为兄弟目录，用 relpath；空格编码为 %20 以防标题含空格，用 <> 包裹路径以便点击跳转
-            rel_raw = os.path.relpath(str(art_dir / "index.md"), str(contents_article_dir)).replace("\\", "/")
-            rel_str = rel_raw.replace(" ", "%20")
-            indent = "  " * level
-            lines.append(f"{indent}- [{title}]({rel_str})")
+        lines: list[str] | None = None
+        toc_n = 0
+        toc_source = ""
+        raw_contents = _get_contents_xhtml_bytes(get_item_fn)
+        if raw_contents:
+            tried = _try_build_toc_from_contents_xhtml(
+                raw_contents, contents_article_dir, href_to_article_dir
+            )
+            if tried is not None:
+                lines, toc_n = tried
+                toc_source = "Contents.xhtml"
+            else:
+                print("⚠️ Contents.xhtml 目录条目无法全部映射到输出，改用 spine 顺序生成目录")
+        if lines is None:
+            lines, toc_n = _build_toc_lines_from_spine(
+                spine_docs, contents_article_dir, href_to_article_dir
+            )
+            if not toc_source:
+                toc_source = "spine"
         body = "\n".join(lines)
         front_matter = {"title": "目录", "order": contents_order, "category": "", "book": book_stem}
         final = "---\n" + yaml.dump(front_matter, allow_unicode=True) + "---\n\n" + body
         (contents_article_dir / "index.md").write_text(final, encoding="utf-8")
-        print("\n📋 已生成目录")
-        print(f"💡 若发现漏项，可运行: python scripts/impl/mao/gen_toc_from_output_mao_merged.py {output_base}, 切换方案重新生成")
+        print(f"\n📋 已生成目录（来源: {toc_source}，{toc_n} 条链接）")
 
     # 圈为零替换（○ → 〇）
     print("\n🔄 执行 ○ → 〇 替换...")
