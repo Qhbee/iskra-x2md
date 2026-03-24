@@ -148,9 +148,11 @@ def _common_category_prefix(cat_a: str, cat_b: str) -> str:
 # 根级项：href 文件名（英文）→ 中文标题。ebooklib 的 item.title 可能不完整，用 stem 更可靠
 _FRONT_MATTER_ZH = {
     "Cover": "封面",
+    "titlepage": "封面",
     "Epigraph": "题词",
     "Author": "作者",
     "Author1": "作者",
+    "portrait": "肖像",
     "Contents": "目录"
 }
 
